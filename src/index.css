@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes:
+    "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
+    "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden",
+    "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black",
+    "luxury", "dracula", "cmyk", "autumn", "business", "acid", "lemonade",
+    "night", "coffee", "winter", "dim", "nord", "sunset"
+  ;
+}
+
+/* 全局样式和过渡效果 */
+html {
+  transition: color-scheme 0.3s ease;
+}
+
+/* 确保 body 使用主题颜色 */
+body {
+  @apply bg-base-100 text-base-content;
+}
