@@ -170,194 +170,235 @@ export default function Inspector({
 
   if (!selectedAsset) {
     return (
-      <aside className="w-80 bg-base-100 border-l border-base-300 flex items-center justify-center">
-        <div className="text-center text-base-content/60">
-          <PhotoIcon className="w-16 h-16 mx-auto mb-4" />
-          <p>选择一个资源</p>
-          <p className="text-sm">查看详细信息</p>
+      <aside className="w-80 bg-gradient-to-b from-base-100 to-base-200/30 border-l border-base-300/50 flex items-center justify-center shadow-sm">
+        <div className="text-center text-base-content/60 p-6">
+          <div className="w-24 h-24 bg-base-200 rounded-full flex items-center justify-center mb-6 mx-auto">
+            <PhotoIcon className="w-12 h-12 text-base-content/30" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3 text-base-content/70">未选择资源</h3>
+          <p className="text-sm text-center max-w-xs">选择一个资源来查看详细信息和进行编辑</p>
         </div>
       </aside>
     );
   }
 
   return (
-    <aside className="w-80 bg-base-100 border-l border-base-300 flex flex-col">
+    <aside className="w-80 bg-gradient-to-b from-base-100 to-base-200/30 border-l border-base-300/50 flex flex-col shadow-sm">
       {/* 预览区域 */}
-      <div className="p-4 border-b border-base-300">
-        <AssetPreview asset={selectedAsset} />
+      <div className="p-6 border-b border-base-300/50">
+        <div className="mb-6">
+          <AssetPreview asset={selectedAsset} />
+        </div>
+        
+        <h3 className="font-bold text-xl mb-3 truncate bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent" title={selectedAsset.name}>
+          {selectedAsset.name}
+        </h3>
       </div>
 
       {/* 操作按钮 */}
-      <div className="p-4 border-b border-base-300">
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            className="btn btn-sm btn-ghost"
-            onClick={() => onExport(selectedAsset)}
-            title="导出"
-          >
-            <ArrowDownTrayIcon className="w-4 h-4" />
-          </button>
-          <button
-            className="btn btn-sm btn-ghost"
-            onClick={() => onShare(selectedAsset)}
-            title="分享"
-          >
-            <ShareIcon className="w-4 h-4" />
-          </button>
-          <button
-            className="btn btn-sm btn-ghost text-error"
-            onClick={() => onDelete(selectedAsset)}
-            title="删除"
-          >
-            <TrashIcon className="w-4 h-4" />
-          </button>
+      <div className="p-6 border-b border-base-300/50">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="tooltip" data-tip="导出">
+            <button
+              className="btn btn-sm btn-primary shadow-md hover:shadow-lg transition-shadow w-full"
+              onClick={() => onExport(selectedAsset)}
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="tooltip" data-tip="分享">
+            <button
+              className="btn btn-sm btn-secondary shadow-md hover:shadow-lg transition-shadow w-full"
+              onClick={() => onShare(selectedAsset)}
+            >
+              <ShareIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="tooltip" data-tip="删除">
+            <button
+              className="btn btn-sm btn-error shadow-md hover:shadow-lg transition-shadow w-full"
+              onClick={() => onDelete(selectedAsset)}
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* 基本信息 */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-4">
-          {/* 文件名 */}
-          <div>
-            <h3 className="font-semibold text-base-content mb-2">基本信息</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                {getAssetTypeIcon(selectedAsset.type, "w-4 h-4")}
-                <span className="font-medium truncate" title={selectedAsset.name}>
-                  {selectedAsset.name}
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-base-content/60">
-                <div>类型: {selectedAsset.type}</div>
-                <div>大小: {formatFileSize(selectedAsset.size)}</div>
+        <div className="p-6 space-y-6">
+          {/* 文件信息 */}
+          <div className="card bg-base-100/50 shadow-sm">
+            <div className="card-body p-4">
+              <h3 className="card-title text-base flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                基本信息
+              </h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-2">
+                  {getAssetTypeIcon(selectedAsset.type, "w-4 h-4")}
+                  <span className="font-medium truncate" title={selectedAsset.name}>
+                    {selectedAsset.name}
+                  </span>
+                </div>
                 
-                {selectedAsset.width && selectedAsset.height && (
-                  <>
-                    <div>宽度: {selectedAsset.width}px</div>
-                    <div>高度: {selectedAsset.height}px</div>
-                  </>
-                )}
-                
-                {selectedAsset.duration && (
-                  <div className="col-span-2">
-                    时长: {Math.floor(selectedAsset.duration / 60)}:{(selectedAsset.duration % 60).toString().padStart(2, '0')}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-base-content/60 font-medium">类型:</span>
+                    <div className="badge badge-primary badge-sm">{selectedAsset.type}</div>
                   </div>
-                )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-base-content/60 font-medium">大小:</span>
+                    <span className="font-semibold">{formatFileSize(selectedAsset.size)}</span>
+                  </div>
+                  
+                  {selectedAsset.width && selectedAsset.height && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-base-content/60 font-medium">宽度:</span>
+                        <span className="font-semibold">{selectedAsset.width}px</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-base-content/60 font-medium">高度:</span>
+                        <span className="font-semibold">{selectedAsset.height}px</span>
+                      </div>
+                    </>
+                  )}
+                  
+                  {selectedAsset.duration && (
+                    <div className="col-span-2 flex justify-between items-center">
+                      <span className="text-base-content/60 font-medium">时长:</span>
+                      <span className="font-semibold">{Math.floor(selectedAsset.duration / 60)}:{(selectedAsset.duration % 60).toString().padStart(2, '0')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* 日期信息 */}
-          <div>
-            <h4 className="font-medium text-base-content mb-2 flex items-center gap-1">
-              <CalendarIcon className="w-4 h-4" />
-              日期信息
-            </h4>
-            <div className="space-y-1 text-sm text-base-content/60">
-              <div>创建: {formatDateTime(selectedAsset.createdAt)}</div>
-              <div>修改: {formatDateTime(selectedAsset.modifiedAt)}</div>
+          <div className="card bg-base-100/50 shadow-sm">
+            <div className="card-body p-4">
+              <h4 className="card-title text-base flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-secondary" />
+                日期信息
+              </h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-base-content/60 font-medium">创建:</span>
+                  <span className="font-semibold">{formatDateTime(selectedAsset.createdAt)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-base-content/60 font-medium">修改:</span>
+                  <span className="font-semibold">{formatDateTime(selectedAsset.modifiedAt)}</span>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* 标签 */}
-          <div>
-            <h4 className="font-medium text-base-content mb-2 flex items-center gap-1">
-              <TagIcon className="w-4 h-4" />
-              标签
-            </h4>
-            
-            {/* 已有标签 */}
-            <div className="flex flex-wrap gap-1 mb-2">
-              {selectedAsset.tags.map((tagId) => {
-                const tag = availableTags.find(t => t.id === tagId);
-                if (!tag) return null;
-                
-                return (
-                  <div
-                    key={tagId}
-                    className="badge badge-sm gap-1"
-                    style={{ backgroundColor: tag.color + '20', color: tag.color }}
-                  >
-                    {tag.name}
-                    <button
-                      className="btn btn-ghost btn-xs p-0 w-3 h-3"
-                      onClick={() => onTagRemove(selectedAsset.id, tagId)}
+          <div className="card bg-base-100/50 shadow-sm">
+            <div className="card-body p-4">
+              <h4 className="card-title text-base flex items-center gap-2">
+                <TagIcon className="w-4 h-4 text-accent" />
+                标签
+              </h4>
+              
+              {/* 已有标签 */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {selectedAsset.tags.map((tagId) => {
+                  const tag = availableTags.find(t => t.id === tagId);
+                  if (!tag) return null;
+                  
+                  return (
+                    <div
+                      key={tagId}
+                      className="badge badge-sm gap-1 hover:badge-secondary transition-colors"
+                      style={{ backgroundColor: tag.color + '20', color: tag.color }}
                     >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* 添加标签 */}
-            <div className="dropdown dropdown-top w-full">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-sm w-full">
-                + 添加标签
+                      {tag.name}
+                      <button
+                        className="btn btn-ghost btn-xs p-0 w-3 h-3 hover:text-error"
+                        onClick={() => onTagRemove(selectedAsset.id, tagId)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
-              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-full max-h-40 overflow-y-auto">
-                {availableTags
-                  .filter(tag => !selectedAsset.tags.includes(tag.id))
-                  .map((tag) => (
-                    <li key={tag.id}>
-                      <a onClick={() => onTagAdd(selectedAsset.id, tag.id)}>
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: tag.color }}
-                        />
-                        {tag.name}
-                      </a>
-                    </li>
-                  ))
-                }
-              </ul>
+              
+              {/* 添加标签 */}
+              <div className="dropdown dropdown-top w-full">
+                <div tabIndex={0} role="button" className="btn btn-ghost btn-sm w-full hover:btn-primary transition-colors">
+                  + 添加标签
+                </div>
+                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-full max-h-40 overflow-y-auto border border-base-300">
+                  {availableTags
+                    .filter(tag => !selectedAsset.tags.includes(tag.id))
+                    .map((tag) => (
+                      <li key={tag.id}>
+                        <a onClick={() => onTagAdd(selectedAsset.id, tag.id)} className="hover:bg-primary/10">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: tag.color }}
+                          />
+                          {tag.name}
+                        </a>
+                      </li>
+                    ))
+                  }
+                </ul>
+              </div>
             </div>
           </div>
 
           {/* 备注 */}
-          <div>
-            <h4 className="font-medium text-base-content mb-2 flex items-center gap-1">
-              <PencilIcon className="w-4 h-4" />
-              备注
-            </h4>
-            
-            {isEditingNotes ? (
-              <div className="space-y-2">
-                <textarea
-                  className="textarea textarea-bordered textarea-sm w-full h-20 resize-none"
-                  placeholder="添加备注..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <button
-                    className="btn btn-primary btn-sm flex-1"
-                    onClick={handleSaveNotes}
-                  >
-                    保存
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => {
-                      setIsEditingNotes(false);
-                      setNotes(selectedAsset.notes || '');
-                    }}
-                  >
-                    取消
-                  </button>
+          <div className="card bg-base-100/50 shadow-sm">
+            <div className="card-body p-4">
+              <h4 className="card-title text-base flex items-center gap-2">
+                <PencilIcon className="w-4 h-4 text-warning" />
+                备注
+              </h4>
+              
+              {isEditingNotes ? (
+                <div className="space-y-3">
+                  <textarea
+                    className="textarea textarea-bordered textarea-sm w-full h-24 resize-none bg-base-100/70 focus:bg-base-100 transition-colors"
+                    placeholder="添加备注..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      className="btn btn-primary btn-sm flex-1 shadow-md hover:shadow-lg transition-shadow"
+                      onClick={handleSaveNotes}
+                    >
+                      保存
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm shadow-md hover:shadow-lg transition-shadow"
+                      onClick={() => {
+                        setIsEditingNotes(false);
+                        setNotes(selectedAsset.notes || '');
+                      }}
+                    >
+                      取消
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div
-                className="min-h-[3rem] p-2 bg-base-200 rounded cursor-pointer text-sm"
-                onClick={() => setIsEditingNotes(true)}
-              >
-                {notes || (
-                  <span className="text-base-content/60">点击添加备注...</span>
-                )}
-              </div>
-            )}
+              ) : (
+                <div
+                  className="min-h-[4rem] p-3 bg-base-200/50 rounded-lg cursor-pointer text-sm hover:bg-base-200 transition-colors border border-dashed border-base-300"
+                  onClick={() => setIsEditingNotes(true)}
+                >
+                  {notes || (
+                    <span className="text-base-content/60 italic">点击添加备注...</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

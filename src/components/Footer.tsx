@@ -135,12 +135,12 @@ export default function Footer({
   const errorTasks = tasks.filter(task => task.status === 'error');
 
   return (
-    <footer className="h-8 bg-base-200 border-t border-base-300 flex items-center px-4 text-xs text-base-content/80">
-      {/* 同步状态 */}
-      <div className="flex items-center gap-2 min-w-0">
-        <div className={`flex items-center gap-1 ${syncColor}`}>
+    <footer className="h-10 bg-gradient-to-r from-base-100 to-base-200/50 border-t border-base-300/50 flex items-center justify-between px-6 text-xs shadow-sm backdrop-blur-sm">
+      {/* 左侧：同步状态 */}
+      <div className="flex items-center gap-3">
+        <div className={`flex items-center gap-2 ${syncColor}`}>
           {syncIcon}
-          <span className="hidden sm:inline">
+          <span className="font-medium">
             {syncStatus === 'idle' ? '已同步' :
              syncStatus === 'syncing' ? '同步中' :
              syncStatus === 'uploading' ? '上传中' :
@@ -151,79 +151,75 @@ export default function Footer({
         </div>
         
         {syncMessage && (
-          <span className="text-base-content/60 truncate" title={syncMessage}>
+          <div className="badge badge-sm badge-outline">
             {syncMessage}
-          </span>
+          </div>
         )}
       </div>
 
-      {/* 分隔符 */}
-      <div className="mx-4 w-px h-4 bg-base-300" />
-
-      {/* 任务进度 */}
-      {runningTasks.length > 0 && (
-        <>
-          <div className="flex items-center gap-4 min-w-0 flex-1">
+      {/* 中间：任务状态 */}
+      <div className="flex items-center gap-4">
+        {runningTasks.length > 0 && (
+          <div className="flex items-center gap-2">
             {runningTasks.slice(0, 2).map((task) => (
-              <TaskProgress key={task.id} task={task} />
+              <div key={task.id} className="badge badge-sm badge-info gap-1">
+                <div className="loading loading-spinner loading-xs" />
+                <span className="truncate max-w-20">{task.name}</span>
+                <span>{task.progress}%</span>
+              </div>
             ))}
             
             {runningTasks.length > 2 && (
-              <span className="text-base-content/60">
-                +{runningTasks.length - 2} 个任务
-              </span>
+              <div className="badge badge-sm badge-ghost">
+                +{runningTasks.length - 2}
+              </div>
             )}
           </div>
-          
-          <div className="mx-4 w-px h-4 bg-base-300" />
-        </>
-      )}
+        )}
 
-      {/* 任务统计 */}
-      {tasks.length > 0 && (
-        <>
+        {tasks.length > 0 && (
           <div className="flex items-center gap-2">
             {completedTasks.length > 0 && (
-              <span className="text-success">
+              <div className="badge badge-sm badge-success">
                 ✓ {completedTasks.length}
-              </span>
+              </div>
             )}
             {errorTasks.length > 0 && (
-              <span className="text-error">
+              <div className="badge badge-sm badge-error">
                 ✗ {errorTasks.length}
-              </span>
+              </div>
             )}
           </div>
-          
-          <div className="mx-4 w-px h-4 bg-base-300" />
-        </>
-      )}
+        )}
+      </div>
 
-      {/* 选中统计 */}
+      {/* 右侧：统计信息 */}
       <div className="flex items-center gap-4">
-        <span>
-          {selectedCount > 0 ? (
-            `已选择 ${selectedCount} / ${totalCount}`
-          ) : (
-            `共 ${totalCount} 个资源`
-          )}
-        </span>
+        <div className="stats stats-horizontal shadow-sm bg-base-100/50">
+          <div className="stat py-1 px-3">
+            <div className="stat-value text-xs text-primary">{selectedCount}</div>
+            <div className="stat-desc text-xs">已选择</div>
+          </div>
+          <div className="stat py-1 px-3">
+            <div className="stat-value text-xs text-secondary">{totalCount}</div>
+            <div className="stat-desc text-xs">总计</div>
+          </div>
+        </div>
         
-        {/* 存储使用情况 */}
         {storageUsed !== undefined && storageTotal !== undefined && (
-          <>
-            <div className="w-px h-4 bg-base-300" />
+          <div className="tooltip tooltip-top" data-tip={`已使用 ${formatStorageSize(storageUsed)} / 总容量 ${formatStorageSize(storageTotal)}`}>
             <div className="flex items-center gap-2">
-              <span>
-                存储: {formatStorageSize(storageUsed)} / {formatStorageSize(storageTotal)}
+              <div className="w-16 bg-base-300 rounded-full h-1.5 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"
+                  style={{ width: `${Math.min((storageUsed / storageTotal) * 100, 100)}%` }}
+                />
+              </div>
+              <span className="text-base-content/70 font-medium text-xs">
+                {Math.round((storageUsed / storageTotal) * 100)}%
               </span>
-              <progress 
-                className="progress progress-primary w-16 h-1" 
-                value={storageUsed} 
-                max={storageTotal}
-              />
             </div>
-          </>
+          </div>
         )}
       </div>
     </footer>

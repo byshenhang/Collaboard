@@ -64,15 +64,17 @@ function FolderTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-base-200 ${
-          isSelected ? 'bg-primary/10 text-primary' : ''
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group ${
+          isSelected 
+            ? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-2 border-primary shadow-sm' 
+            : 'hover:bg-base-200/70 hover:shadow-sm'
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onFolderSelect(node.id)}
       >
         {/* 展开/收起图标 */}
         <button
-          className="w-4 h-4 flex items-center justify-center hover:bg-base-300 rounded"
+          className="w-4 h-4 flex items-center justify-center hover:bg-base-300/70 rounded transition-colors duration-150"
           onClick={(e) => {
             e.stopPropagation();
             if (hasChildren) {
@@ -82,9 +84,9 @@ function FolderTreeNode({
         >
           {hasChildren ? (
             node.isExpanded ? (
-              <ChevronDownIcon className="w-3 h-3" />
+              <ChevronDownIcon className="w-3 h-3 text-base-content/70" />
             ) : (
-              <ChevronRightIcon className="w-3 h-3" />
+              <ChevronRightIcon className="w-3 h-3 text-base-content/70" />
             )
           ) : (
             <div className="w-3 h-3" />
@@ -92,14 +94,20 @@ function FolderTreeNode({
         </button>
 
         {/* 文件夹图标 */}
-        <FolderIcon className="w-4 h-4 text-warning" />
+        <FolderIcon className={`w-4 h-4 transition-colors duration-200 ${
+          isSelected ? 'text-primary' : 'text-warning group-hover:text-warning/80'
+        }`} />
 
         {/* 文件夹名称 */}
-        <span className="flex-1 text-sm truncate">{node.name}</span>
+        <span className="flex-1 text-sm truncate font-medium">{node.name}</span>
 
         {/* 资源数量 */}
         {node.assetCount !== undefined && (
-          <span className="text-xs text-base-content/60 bg-base-200 px-1 rounded">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${
+            isSelected 
+              ? 'bg-primary/20 text-primary' 
+              : 'bg-base-content/10 text-base-content/60 group-hover:bg-base-content/20'
+          }`}>
             {node.assetCount}
           </span>
         )}
@@ -142,12 +150,12 @@ export default function Sidebar({
   const [activeTab, setActiveTab] = useState<'folders' | 'tags'>('folders');
 
   return (
-    <aside className="w-80 bg-base-100 border-r border-base-300 flex flex-col">
+    <aside className="w-80 bg-gradient-to-b from-base-100 to-base-200/30 border-r border-base-300/50 flex flex-col shadow-sm">
       {/* 标签页切换 */}
-      <div className="tabs tabs-boxed m-2">
+      <div className="tabs tabs-boxed m-3 shadow-sm">
         <button
-          className={`tab tab-sm flex-1 ${
-            activeTab === 'folders' ? 'tab-active' : ''
+          className={`tab tab-sm flex-1 transition-all duration-200 ${
+            activeTab === 'folders' ? 'tab-active shadow-md' : 'hover:bg-base-200'
           }`}
           onClick={() => setActiveTab('folders')}
         >
@@ -155,8 +163,8 @@ export default function Sidebar({
           文件夹
         </button>
         <button
-          className={`tab tab-sm flex-1 ${
-            activeTab === 'tags' ? 'tab-active' : ''
+          className={`tab tab-sm flex-1 transition-all duration-200 ${
+            activeTab === 'tags' ? 'tab-active shadow-md' : 'hover:bg-base-200'
           }`}
           onClick={() => setActiveTab('tags')}
         >
@@ -166,7 +174,7 @@ export default function Sidebar({
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-3">
         {activeTab === 'folders' ? (
           /* 文件夹树 */
           <div className="space-y-1">
@@ -188,28 +196,34 @@ export default function Sidebar({
               return (
                 <div
                   key={tag.id}
-                  className={`flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-base-200 ${
-                    isSelected ? 'bg-primary/10' : ''
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group ${
+                    isSelected 
+                      ? 'bg-gradient-to-r from-primary/20 to-primary/10 border-l-2 border-primary shadow-sm' 
+                      : 'hover:bg-base-200/70 hover:shadow-sm'
                   }`}
                   onClick={() => onTagToggle(tag.id)}
                 >
                   {/* 标签颜色指示器 */}
                   <div
-                    className="w-3 h-3 rounded-full"
+                    className="w-3 h-3 rounded-full shadow-sm"
                     style={{ backgroundColor: tag.color }}
                   />
 
                   {/* 标签名称 */}
-                  <span className="flex-1 text-sm truncate">{tag.name}</span>
+                  <span className="flex-1 text-sm truncate font-medium">{tag.name}</span>
 
                   {/* 资源数量 */}
-                  <span className="text-xs text-base-content/60 bg-base-200 px-1 rounded">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    isSelected 
+                      ? 'bg-primary/20 text-primary' 
+                      : 'bg-base-content/10 text-base-content/60 group-hover:bg-base-content/20'
+                  }`}>
                     {tag.count}
                   </span>
 
                   {/* 选中状态 */}
                   {isSelected && (
-                    <div className="w-2 h-2 bg-primary rounded-full" />
+                    <div className="w-2 h-2 bg-primary rounded-full shadow-sm" />
                   )}
                 </div>
               );
