@@ -1,0 +1,427 @@
+/**
+ * 文件管理服务层
+ * 
+ * 封装与 Tauri 后端的通信，提供类型安全的 API 调用
+ */
+
+import { invoke } from '@tauri-apps/api/core';
+import type {
+  CommandResponse,
+  UploadFileRequest,
+  UploadFileResponse,
+  CreateDirectoryRequest,
+  CreateDirectoryResponse,
+  DirectoryTreeNode,
+  FileListItem,
+  StorageStats,
+} from '../types/fileManager';
+
+/**
+ * 文件管理服务类
+ */
+export class FileManagerService {
+  /**
+   * 上传单个文件
+   */
+  static async uploadFile(
+    fileData: Uint8Array,
+    originalName: string,
+    directoryId?: string
+  ): Promise<UploadFileResponse> {
+    const request: UploadFileRequest = {
+      file_data: Array.from(fileData),
+      original_name: originalName,
+      directory_id: directoryId,
+    };
+
+    const response = await invoke<CommandResponse<UploadFileResponse>>(
+      'upload_file',
+      { command: request }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Upload failed');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 批量上传文件
+   */
+  static async uploadMultipleFiles(
+    files: Array<{
+      fileData: Uint8Array;
+      originalName: string;
+      directoryId?: string;
+    }>
+  ): Promise<UploadFileResponse[]> {
+    const requests = files.map(({ fileData, originalName, directoryId }) => ({
+      file_data: Array.from(fileData),
+      original_name: originalName,
+      directory_id: directoryId,
+    }));
+
+    const response = await invoke<CommandResponse<UploadFileResponse[]>>(
+      'upload_multiple_files',
+      { files: requests }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Batch upload failed');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 创建目录
+   */
+  static async createDirectory(
+    name: string,
+    parentId?: string
+  ): Promise<CreateDirectoryResponse> {
+    const request: CreateDirectoryRequest = {
+      name,
+      parent_id: parentId,
+    };
+
+    const response = await invoke<CommandResponse<CreateDirectoryResponse>>(
+      'create_directory',
+      { command: request }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Directory creation failed');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 删除文件
+   */
+  static async deleteFile(fileId: string): Promise<void> {
+    const response = await invoke<CommandResponse<void>>('delete_file', {
+      command: { file_id: fileId },
+    });
+
+    if (!response.success) {
+      throw new Error(response.error || 'File deletion failed');
+    }
+  }
+
+  /**
+   * 删除目录
+   */
+  static async deleteDirectory(directoryId: string): Promise<void> {
+    const response = await invoke<CommandResponse<void>>('delete_directory', {
+      command: { directory_id: directoryId },
+    });
+
+    if (!response.success) {
+      throw new Error(response.error || 'Directory deletion failed');
+    }
+  }
+
+  /**
+   * 获取目录树
+   */
+  static async getDirectoryTree(): Promise<DirectoryTreeNode[]> {
+    const response = await invoke<CommandResponse<DirectoryTreeNode[]>>(
+      'get_directory_tree'
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to load directory tree');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 获取目录中的文件列表
+   */
+  static async getDirectoryFiles(directoryId: string): Promise<FileListItem[]> {
+    const response = await invoke<CommandResponse<FileListItem[]>>(
+      'get_directory_files',
+      { command: { directory_id: directoryId } }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to load directory files');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 获取文件信息
+   */
+  static async getFileInfo(fileId: string): Promise<FileListItem | null> {
+    const response = await invoke<CommandResponse<FileListItem | null>>(
+      'get_file_info',
+      { command: { file_id: fileId } }
+    );
+
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to get file info');
+    }
+
+    return response.data || null;
+  }
+
+  /**
+   * 搜索文件
+   */
+  static async searchFiles(
+    query: string,
+    directoryId?: string
+  ): Promise<FileListItem[]> {
+    const response = await invoke<CommandResponse<FileListItem[]>>(
+      'search_files',
+      {
+        query,
+        directory_id: directoryId,
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Search failed');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 获取存储统计信息
+   */
+  static async getStorageStats(): Promise<StorageStats> {
+    const response = await invoke<CommandResponse<StorageStats>>(
+      'get_storage_stats'
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to get storage stats');
+    }
+
+    return response.data;
+  }
+
+  /**
+   * 验证文件类型
+   */
+  static async validateFileType(filename: string): Promise<boolean> {
+    const response = await invoke<CommandResponse<boolean>>(
+      'validate_file_type',
+      { filename }
+    );
+
+    if (!response.success) {
+      throw new Error(response.error || 'File type validation failed');
+    }
+
+    return response.data || false;
+  }
+}
+
+/**
+ * 文件读取工具函数
+ */
+export class FileUtils {
+  /**
+   * 将 File 对象转换为 Uint8Array
+   */
+  static async fileToUint8Array(file: File): Promise<Uint8Array> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          resolve(new Uint8Array(reader.result));
+        } else {
+          reject(new Error('Failed to read file as ArrayBuffer'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  /**
+   * 格式化文件大小
+   */
+  static formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  /**
+   * 获取文件类型信息
+   */
+  static getFileTypeInfo(filename: string, mimeType?: string): {
+    type: 'image' | 'video' | 'document' | 'archive' | 'other';
+    icon: string;
+    color: string;
+  } {
+    const extension = filename.split('.').pop()?.toLowerCase() || '';
+    
+    // 图片类型
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension)) {
+      return {
+        type: 'image',
+        icon: '🖼️',
+        color: 'text-green-500',
+      };
+    }
+    
+    // 视频类型
+    if (['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(extension)) {
+      return {
+        type: 'video',
+        icon: '🎥',
+        color: 'text-red-500',
+      };
+    }
+    
+    // 文档类型
+    if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'md'].includes(extension)) {
+      return {
+        type: 'document',
+        icon: '📄',
+        color: 'text-blue-500',
+      };
+    }
+    
+    // 压缩文件
+    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
+      return {
+        type: 'archive',
+        icon: '📦',
+        color: 'text-yellow-500',
+      };
+    }
+    
+    // 其他类型
+    return {
+      type: 'other',
+      icon: '📁',
+      color: 'text-gray-500',
+    };
+  }
+
+  /**
+   * 检查是否为图片文件
+   */
+  static isImageFile(filename: string): boolean {
+    const extension = filename.split('.').pop()?.toLowerCase() || '';
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension);
+  }
+
+  /**
+   * 检查是否为视频文件
+   */
+  static isVideoFile(filename: string): boolean {
+    const extension = filename.split('.').pop()?.toLowerCase() || '';
+    return ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(extension);
+  }
+
+  /**
+   * 生成文件预览 URL（如果支持）
+   */
+  static generatePreviewUrl(file: FileListItem): string | null {
+    if (this.isImageFile(file.name)) {
+      // 这里应该返回实际的文件访问 URL
+      // 在实际应用中，可能需要通过 Tauri 提供文件服务
+      return `file://${file.name}`; // 占位符
+    }
+    return null;
+  }
+
+  /**
+   * 验证文件名
+   */
+  static validateFileName(filename: string): { valid: boolean; error?: string } {
+    if (!filename || filename.trim().length === 0) {
+      return { valid: false, error: '文件名不能为空' };
+    }
+    
+    if (filename.length > 255) {
+      return { valid: false, error: '文件名过长（最大255字符）' };
+    }
+    
+    const invalidChars = /[<>:"/\\|?*]/;
+    if (invalidChars.test(filename)) {
+      return { valid: false, error: '文件名包含非法字符' };
+    }
+    
+    return { valid: true };
+  }
+
+  /**
+   * 生成唯一的上传 ID
+   */
+  static generateUploadId(): string {
+    return `upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * 计算上传进度
+   */
+  static calculateProgress(loaded: number, total: number): number {
+    if (total === 0) return 0;
+    return Math.round((loaded / total) * 100);
+  }
+
+  /**
+   * 格式化日期时间
+   */
+  static formatDateTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return '今天 ' + date.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else if (diffDays === 1) {
+      return '昨天 ' + date.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else if (diffDays < 7) {
+      return `${diffDays}天前`;
+    } else {
+      return date.toLocaleDateString('zh-CN');
+    }
+  }
+}
+
+/**
+ * 错误处理工具
+ */
+export class FileManagerError extends Error {
+  constructor(
+    message: string,
+    public code?: string,
+    public details?: any
+  ) {
+    super(message);
+    this.name = 'FileManagerError';
+  }
+
+  static fromResponse(response: CommandResponse<any>): FileManagerError {
+    return new FileManagerError(
+      response.error || 'Unknown error',
+      'COMMAND_ERROR',
+      response
+    );
+  }
+}

@@ -2,8 +2,20 @@
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::os::raw::{c_char, c_int};
+use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use log::{info, warn, error, debug};
+use tokio::sync::Mutex;
+
+// 文件管理模块
+mod file_manager;
+use file_manager::{
+    commands::*,
+    config::FileManagerConfig,
+    database::DatabaseService,
+    filesystem::FileSystemService,
+    service::FileManagerService,
+};
 
 // FFI 绑定：C++ TGA 图像加载库
 #[repr(C)]
@@ -284,6 +296,32 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .setup(|app| {
+            // 初始化文件管理服务
+            let app_data_dir = app.path().app_data_dir()
+                .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+            
+            let config = FileManagerConfig::new(app_data_dir)
+                .map_err(|e| format!("Failed to create file manager config: {}", e))?;
+            
+            // 创建数据库服务
+            let db_service = tauri::async_runtime::block_on(async {
+                DatabaseService::new(&config.database_path).await
+            }).map_err(|e| format!("Failed to initialize database: {}", e))?;
+            
+            // 创建文件系统服务
+            let fs_service = FileSystemService::new(&config.storage_path)
+                .map_err(|e| format!("Failed to initialize filesystem: {}", e))?;
+            
+            // 创建文件管理服务
+            let file_manager = FileManagerService::with_config(config, db_service, fs_service);
+            
+            // 将服务添加到应用状态
+            app.manage(Arc::new(Mutex::new(file_manager)));
+            
+            info!("文件管理系统初始化完成");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             get_system_info,
@@ -292,7 +330,19 @@ pub fn run() {
             process_user_data,
             async_operation,
             load_tga_image,
-            get_supported_image_formats
+            get_supported_image_formats,
+            // 文件管理命令
+            upload_file,
+            create_directory,
+            delete_file,
+            delete_directory,
+            get_directory_tree,
+            get_directory_files,
+            get_file_info,
+            upload_multiple_files,
+            search_files,
+            get_storage_stats,
+            validate_file_type
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

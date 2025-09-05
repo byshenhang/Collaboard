@@ -4,11 +4,20 @@ import Sidebar, { FolderNode } from './components/Sidebar';
 import Content, { Asset, AssetType, SortField, SortDirection } from './components/Content';
 import Inspector from './components/Inspector';
 import Footer, { SyncStatus, Task } from './components/Footer';
+import { FileManager } from './pages';
+
+/**
+ * 应用模式枚举
+ */
+export type AppMode = 'asset-manager' | 'file-manager';
 
 /**
  * 主应用组件 - Eagle风格的美术资产管理工具
  */
 function App() {
+  // 应用模式状态
+  const [appMode, setAppMode] = useState<AppMode>('asset-manager');
+  
   // 视图状态
   const [viewType, setViewType] = useState<ViewType>('grid');
   const [currentLibrary, setCurrentLibrary] = useState('default');
@@ -191,6 +200,10 @@ function App() {
     console.log('打开设置');
   };
   
+  const handleModeChange = (mode: AppMode) => {
+    setAppMode(mode);
+  };
+  
   const handleFolderSelect = (folderId: string) => {
     setSelectedFolderId(folderId);
   };
@@ -261,52 +274,61 @@ function App() {
         currentLibrary={currentLibrary}
         searchQuery={searchQuery}
         viewType={viewType}
+        appMode={appMode}
         onLibraryChange={handleLibraryChange}
         onSearchChange={handleSearchChange}
         onViewTypeChange={handleViewTypeChange}
         onSettingsClick={handleSettingsClick}
+        onModeChange={handleModeChange}
       />
       
       {/* 主内容区域 */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 左侧边栏 */}
-        <Sidebar
-          folders={folders}
-          tags={tags}
-          selectedFolderId={selectedFolderId}
-          selectedTagIds={selectedTagIds}
-          onFolderSelect={handleFolderSelect}
-          onFolderToggle={handleFolderToggle}
-          onTagToggle={handleTagToggle}
-        />
-        
-        {/* 主内容区 */}
-        <Content
-          assets={mockAssets}
-          viewType={viewType}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          selectedAssetIds={selectedAssetIds}
-          loading={loading}
-          onSortChange={handleSortChange}
-          onAssetSelect={handleAssetSelect}
-          onAssetDoubleClick={handleAssetDoubleClick}
-        />
-        
-        {/* 右侧信息栏 */}
-        {selectedAsset && (
-          <Inspector
-            selectedAsset={selectedAsset}
-            availableTags={tags}
-            onNotesUpdate={handleNotesUpdate}
-            onTagAdd={handleTagAdd}
-            onTagRemove={handleTagRemove}
-            onExport={handleExport}
-            onShare={handleShare}
-            onDelete={handleDelete}
+      {appMode === 'asset-manager' ? (
+        <div className="flex-1 flex overflow-hidden">
+          {/* 左侧边栏 */}
+          <Sidebar
+            folders={folders}
+            tags={tags}
+            selectedFolderId={selectedFolderId}
+            selectedTagIds={selectedTagIds}
+            onFolderSelect={handleFolderSelect}
+            onFolderToggle={handleFolderToggle}
+            onTagToggle={handleTagToggle}
           />
-        )}
-      </div>
+          
+          {/* 主内容区 */}
+          <Content
+            assets={mockAssets}
+            viewType={viewType}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            selectedAssetIds={selectedAssetIds}
+            loading={loading}
+            onSortChange={handleSortChange}
+            onAssetSelect={handleAssetSelect}
+            onAssetDoubleClick={handleAssetDoubleClick}
+          />
+          
+          {/* 右侧信息栏 */}
+          {selectedAsset && (
+            <Inspector
+              selectedAsset={selectedAsset}
+              availableTags={tags}
+              onNotesUpdate={handleNotesUpdate}
+              onTagAdd={handleTagAdd}
+              onTagRemove={handleTagRemove}
+              onExport={handleExport}
+              onShare={handleShare}
+              onDelete={handleDelete}
+            />
+          )}
+        </div>
+      ) : (
+        /* 文件管理器模式 */
+        <div className="flex-1 overflow-hidden">
+          <FileManager />
+        </div>
+      )}
       
       {/* 底部状态栏 */}
       <Footer

@@ -1,0 +1,494 @@
+/**
+ * 文件管理器页面样式
+ */
+
+/* 主容器 */
+.file-manager {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+/* 头部工具栏 */
+.file-manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.file-manager__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.file-manager__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.file-manager__header-center {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 1rem;
+}
+
+.file-manager__search {
+  width: 100%;
+}
+
+.file-manager__header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.file-manager__selection-count {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* 主要内容区域 */
+.file-manager__content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 侧边栏 */
+.file-manager__sidebar {
+  width: 280px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background-secondary);
+  border-right: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.file-manager--sidebar-collapsed .file-manager__sidebar {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.file-manager__sidebar-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.file-manager__sidebar-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.file-manager__storage-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.file-manager__storage-used {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.file-manager__storage-bar {
+  height: 4px;
+  background: var(--color-background);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.file-manager__storage-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.file-manager__sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+/* 主内容区域 */
+.file-manager__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 文件上传区域 */
+.file-manager__upload-section {
+  flex-shrink: 0;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-background);
+}
+
+.file-manager--upload-visible .file-manager__upload-section {
+  display: block;
+}
+
+/* 文件列表区域 */
+.file-manager__file-section {
+  flex: 1;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+/* 错误提示 */
+.file-manager__error {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  max-width: 400px;
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease;
+}
+
+.file-manager__error-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.file-manager__error-message {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--color-error-dark);
+  line-height: 1.4;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .file-manager__sidebar {
+    width: 240px;
+    min-width: 240px;
+  }
+  
+  .file-manager__header-center {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .file-manager__header {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+  
+  .file-manager__header-left {
+    gap: 0.5rem;
+  }
+  
+  .file-manager__title {
+    font-size: 1.125rem;
+  }
+  
+  .file-manager__header-center {
+    margin: 0 0.5rem;
+    max-width: 200px;
+  }
+  
+  .file-manager__header-right {
+    gap: 0.5rem;
+  }
+  
+  .file-manager__selection-count {
+    display: none;
+  }
+  
+  .file-manager__sidebar {
+    width: 200px;
+    min-width: 200px;
+  }
+  
+  .file-manager__sidebar-header {
+    padding: 0.75rem;
+  }
+  
+  .file-manager__upload-section {
+    padding: 0.75rem;
+  }
+  
+  .file-manager__file-section {
+    padding: 0.75rem;
+  }
+  
+  .file-manager__error {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .file-manager__header {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+  
+  .file-manager__header-center {
+    order: 3;
+    flex: 1 1 100%;
+    margin: 0.5rem 0 0 0;
+    max-width: none;
+  }
+  
+  .file-manager__header-right {
+    flex-wrap: wrap;
+  }
+  
+  /* 移动端默认折叠侧边栏 */
+  .file-manager__sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 20;
+    width: 280px;
+    min-width: 280px;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .file-manager:not(.file-manager--sidebar-collapsed) .file-manager__sidebar {
+    transform: translateX(0);
+  }
+  
+  .file-manager__main {
+    width: 100%;
+  }
+  
+  /* 遮罩层 */
+  .file-manager:not(.file-manager--sidebar-collapsed)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 15;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-manager__header {
+    padding: 0.375rem;
+  }
+  
+  .file-manager__title {
+    font-size: 1rem;
+  }
+  
+  .file-manager__header-right {
+    gap: 0.25rem;
+  }
+  
+  .file-manager__sidebar {
+    width: 260px;
+    min-width: 260px;
+  }
+  
+  .file-manager__upload-section {
+    padding: 0.5rem;
+  }
+  
+  .file-manager__file-section {
+    padding: 0.5rem;
+  }
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  .file-manager {
+    background: var(--color-background-dark, #1a1a1a);
+  }
+  
+  .file-manager__header {
+    background: var(--color-background-dark, #1a1a1a);
+    border-bottom-color: var(--color-border-dark, #333);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .file-manager__sidebar {
+    background: var(--color-background-secondary-dark, #2a2a2a);
+    border-right-color: var(--color-border-dark, #333);
+  }
+  
+  .file-manager__sidebar-header {
+    border-bottom-color: var(--color-border-dark, #333);
+  }
+  
+  .file-manager__storage-bar {
+    background: var(--color-background-dark, #1a1a1a);
+  }
+  
+  .file-manager__upload-section {
+    background: var(--color-background-dark, #1a1a1a);
+    border-bottom-color: var(--color-border-dark, #333);
+  }
+  
+  .file-manager__error {
+    background: var(--color-error-light-dark, rgba(239, 68, 68, 0.1));
+    border-color: var(--color-error-dark, #dc2626);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .file-manager__error-message {
+    color: var(--color-error-light, #fca5a5);
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .file-manager__header {
+    border-bottom-width: 2px;
+  }
+  
+  .file-manager__sidebar {
+    border-right-width: 2px;
+  }
+  
+  .file-manager__sidebar-header {
+    border-bottom-width: 2px;
+  }
+  
+  .file-manager__upload-section {
+    border-bottom-width: 2px;
+  }
+  
+  .file-manager__error {
+    border-width: 2px;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .file-manager__sidebar,
+  .file-manager__storage-fill {
+    transition: none;
+  }
+  
+  .file-manager__error {
+    animation: none;
+  }
+  
+  @keyframes slideInRight {
+    from, to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .file-manager {
+    height: auto;
+    overflow: visible;
+  }
+  
+  .file-manager__header {
+    box-shadow: none;
+    border-bottom: 1px solid #000;
+  }
+  
+  .file-manager__header-right {
+    display: none;
+  }
+  
+  .file-manager__content {
+    overflow: visible;
+  }
+  
+  .file-manager__sidebar {
+    border-right: 1px solid #000;
+  }
+  
+  .file-manager__upload-section {
+    display: none;
+  }
+  
+  .file-manager__error {
+    display: none;
+  }
+  
+  .file-manager__storage-bar {
+    border: 1px solid #000;
+  }
+  
+  .file-manager__storage-fill {
+    background: #000;
+  }
+}
+
+/* 焦点样式 */
+.file-manager__header button:focus-visible,
+.file-manager__sidebar button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* 滚动条样式 */
+.file-manager__sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.file-manager__sidebar-content::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+}
+
+.file-manager__sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.file-manager__sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Firefox 滚动条 */
+.file-manager__sidebar-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-background-secondary);
+}

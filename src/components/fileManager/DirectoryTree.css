@@ -1,0 +1,421 @@
+/**
+ * 目录树组件样式
+ */
+
+/* 主容器 */
+.directory-tree {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 头部 */
+.directory-tree__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.directory-tree__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* 内容区域 */
+.directory-tree__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+/* 加载状态 */
+.directory-tree--loading {
+  justify-content: center;
+  align-items: center;
+}
+
+.directory-tree__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  color: var(--color-text-secondary);
+}
+
+.directory-tree__loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: directory-tree-spin 1s linear infinite;
+}
+
+@keyframes directory-tree-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 空状态 */
+.directory-tree--empty {
+  justify-content: center;
+  align-items: center;
+}
+
+.directory-tree__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px;
+  text-align: center;
+}
+
+.directory-tree__empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-text-tertiary);
+}
+
+.directory-tree__empty-text {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+/* 树节点 */
+.directory-tree-node {
+  position: relative;
+}
+
+.directory-tree-node__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  margin: 0 8px;
+}
+
+.directory-tree-node__content:hover {
+  background: var(--color-background-hover);
+}
+
+/* 节点状态 */
+.directory-tree-node--selected .directory-tree-node__content {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.directory-tree-node--current .directory-tree-node__content {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 500;
+}
+
+.directory-tree-node--hovered .directory-tree-node__content {
+  background: var(--color-background-hover);
+}
+
+.directory-tree-node--readonly .directory-tree-node__content {
+  cursor: default;
+}
+
+/* 展开按钮 */
+.directory-tree-node__expand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.directory-tree-node__expand:hover:not(:disabled) {
+  background: var(--color-background-hover);
+}
+
+.directory-tree-node__expand:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.directory-tree-node__expand-icon {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+.directory-tree-node__expand-icon--expanded {
+  transform: rotate(90deg);
+}
+
+.directory-tree-node__expand-placeholder {
+  width: 12px;
+  height: 12px;
+}
+
+/* 目录图标 */
+.directory-tree-node__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--color-warning);
+}
+
+.directory-tree-node__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 目录名称 */
+.directory-tree-node__name {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 重命名输入框 */
+.directory-tree-node__rename-input {
+  flex: 1;
+  padding: 2px 6px;
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  outline: none;
+}
+
+.directory-tree-node__rename-input:focus {
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+/* 操作按钮 */
+.directory-tree-node__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.directory-tree-node--hovered .directory-tree-node__actions {
+  opacity: 1;
+}
+
+.directory-tree-node__actions .icon-button {
+  width: 24px;
+  height: 24px;
+}
+
+.directory-tree-node__actions .icon-button svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* 子目录容器 */
+.directory-tree-node__children {
+  position: relative;
+}
+
+.directory-tree-node__children::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+  opacity: 0.5;
+}
+
+/* 层级缩进 */
+.directory-tree-node__content--level-0 { padding-left: 16px; }
+.directory-tree-node__content--level-1 { padding-left: 40px; }
+.directory-tree-node__content--level-2 { padding-left: 64px; }
+.directory-tree-node__content--level-3 { padding-left: 88px; }
+.directory-tree-node__content--level-4 { padding-left: 112px; }
+.directory-tree-node__content--level-5 { padding-left: 136px; }
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  .directory-tree {
+    background: var(--color-background-dark, #1a1a1a);
+    border-color: var(--color-border-dark, #333);
+  }
+
+  .directory-tree__header {
+    background: var(--color-background-secondary-dark, #2a2a2a);
+    border-bottom-color: var(--color-border-dark, #333);
+  }
+
+  .directory-tree__title {
+    color: var(--color-text-primary-dark, #fff);
+  }
+
+  .directory-tree__loading,
+  .directory-tree__empty-text {
+    color: var(--color-text-secondary-dark, #ccc);
+  }
+
+  .directory-tree__empty-icon {
+    color: var(--color-text-tertiary-dark, #999);
+  }
+
+  .directory-tree-node__content:hover {
+    background: var(--color-background-hover-dark, #333);
+  }
+
+  .directory-tree-node--selected .directory-tree-node__content {
+    background: var(--color-primary-light-dark, #1a4480);
+    color: var(--color-primary-dark, #4a9eff);
+  }
+
+  .directory-tree-node--current .directory-tree-node__content {
+    background: var(--color-primary-dark, #0066cc);
+    color: var(--color-primary-contrast-dark, #fff);
+  }
+
+  .directory-tree-node__name {
+    color: var(--color-text-primary-dark, #fff);
+  }
+
+  .directory-tree-node__rename-input {
+    background: var(--color-background-dark, #1a1a1a);
+    color: var(--color-text-primary-dark, #fff);
+    border-color: var(--color-primary-dark, #0066cc);
+  }
+
+  .directory-tree-node__children::before {
+    background: var(--color-border-dark, #333);
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .directory-tree {
+    border-width: 2px;
+  }
+
+  .directory-tree-node__content {
+    border: 1px solid transparent;
+  }
+
+  .directory-tree-node__content:hover {
+    border-color: var(--color-border);
+  }
+
+  .directory-tree-node--selected .directory-tree-node__content,
+  .directory-tree-node--current .directory-tree-node__content {
+    border-color: var(--color-primary);
+    border-width: 2px;
+  }
+
+  .directory-tree-node__expand:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .directory-tree-node__rename-input:focus {
+    border-width: 2px;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .directory-tree-node__content,
+  .directory-tree-node__expand,
+  .directory-tree-node__expand-icon,
+  .directory-tree-node__actions,
+  .directory-tree__loading-spinner {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .directory-tree__header {
+    padding: 8px 12px;
+  }
+
+  .directory-tree__title {
+    font-size: 13px;
+  }
+
+  .directory-tree-node__content {
+    padding: 8px 12px;
+    margin: 0 4px;
+  }
+
+  .directory-tree-node__name {
+    font-size: 13px;
+  }
+
+  /* 减少层级缩进 */
+  .directory-tree-node__content--level-0 { padding-left: 12px; }
+  .directory-tree-node__content--level-1 { padding-left: 28px; }
+  .directory-tree-node__content--level-2 { padding-left: 44px; }
+  .directory-tree-node__content--level-3 { padding-left: 60px; }
+  .directory-tree-node__content--level-4 { padding-left: 76px; }
+  .directory-tree-node__content--level-5 { padding-left: 92px; }
+
+  .directory-tree-node__children::before {
+    left: 20px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .directory-tree {
+    border: 1px solid #000;
+    background: #fff;
+  }
+
+  .directory-tree__header {
+    background: #f5f5f5;
+    border-bottom: 1px solid #000;
+  }
+
+  .directory-tree-node__actions {
+    display: none;
+  }
+
+  .directory-tree-node__content {
+    background: transparent !important;
+    color: #000 !important;
+  }
+
+  .directory-tree-node__expand {
+    display: none;
+  }
+
+  .directory-tree-node__children::before {
+    background: #000;
+  }
+}
