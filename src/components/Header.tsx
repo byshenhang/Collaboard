@@ -1,4 +1,3 @@
-import React from 'react';
 import { MagnifyingGlassIcon, Cog6ToothIcon, Squares2X2Icon, ListBulletIcon, PhotoIcon, FolderIcon } from '@heroicons/react/24/outline';
 import type { AppMode } from '../App';
 

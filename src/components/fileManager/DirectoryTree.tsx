@@ -9,7 +9,6 @@ import { Button, IconButton } from '../ui';
 import type {
   DirectoryTreeNode,
   DirectoryExpandState,
-  FileManagerState,
 } from '../../types/fileManager';
 import './DirectoryTree.css';
 
