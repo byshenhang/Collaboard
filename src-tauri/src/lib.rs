@@ -6,6 +6,8 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use log::{info, warn, error, debug};
 use tokio::sync::Mutex;
+use chrono::Datelike;
+use tauri::Manager;
 
 // 文件管理模块
 mod file_manager;
@@ -301,8 +303,9 @@ pub fn run() {
             let app_data_dir = app.path().app_data_dir()
                 .map_err(|e| format!("Failed to get app data dir: {}", e))?;
             
-            let config = FileManagerConfig::new(app_data_dir)
-                .map_err(|e| format!("Failed to create file manager config: {}", e))?;
+            let config = tauri::async_runtime::block_on(async {
+                FileManagerConfig::new().await
+            }).map_err(|e| format!("Failed to create file manager config: {}", e))?;
             
             // 创建数据库服务
             let db_service = tauri::async_runtime::block_on(async {

@@ -11,6 +11,7 @@ use chrono::{DateTime, Local};
 use rusqlite::{params, Connection, Row};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 /// 目录信息结构
@@ -40,7 +41,7 @@ pub struct FileInfo {
 
 /// 数据库服务
 pub struct DatabaseService {
-    connection: Connection,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl DatabaseService {
@@ -51,7 +52,9 @@ impl DatabaseService {
         let connection = Connection::open(db_path)
             .map_err(FileManagerError::Database)?;
         
-        let service = Self { connection };
+        let service = Self { 
+            connection: Arc::new(Mutex::new(connection))
+        };
         service.initialize_tables().await?;
         
         Ok(service)
@@ -59,8 +62,10 @@ impl DatabaseService {
 
     /// 初始化数据库表结构
     async fn initialize_tables(&self) -> Result<()> {
+        let conn = self.connection.lock().unwrap();
+        
         // 创建目录表
-        self.connection.execute(
+        conn.execute(
             r#"
             CREATE TABLE IF NOT EXISTS directories (
                 id TEXT PRIMARY KEY,
@@ -76,7 +81,7 @@ impl DatabaseService {
         ).map_err(FileManagerError::Database)?;
 
         // 创建文件表
-        self.connection.execute(
+        conn.execute(
             r#"
             CREATE TABLE IF NOT EXISTS files (
                 id TEXT PRIMARY KEY,
@@ -95,17 +100,17 @@ impl DatabaseService {
         ).map_err(FileManagerError::Database)?;
 
         // 创建索引以提高查询性能
-        self.connection.execute(
+        conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_directories_parent_id ON directories (parent_id)",
             [],
         ).map_err(FileManagerError::Database)?;
 
-        self.connection.execute(
+        conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_files_directory_id ON files (directory_id)",
             [],
         ).map_err(FileManagerError::Database)?;
 
-        self.connection.execute(
+        conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_directories_path ON directories (path)",
             [],
         ).map_err(FileManagerError::Database)?;
@@ -123,7 +128,8 @@ impl DatabaseService {
         let id = Uuid::new_v4().to_string();
         let now = Local::now();
         
-        self.connection.execute(
+        let conn = self.connection.lock().unwrap();
+        conn.execute(
             r#"
             INSERT INTO directories (id, name, parent_id, path, created_at, updated_at)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
@@ -150,7 +156,8 @@ impl DatabaseService {
 
     /// 获取目录信息
     pub async fn get_directory(&self, id: &str) -> Result<Option<DirectoryInfo>> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT id, name, parent_id, path, created_at, updated_at FROM directories WHERE id = ?1"
         ).map_err(FileManagerError::Database)?;
 
@@ -167,7 +174,8 @@ impl DatabaseService {
 
     /// 获取子目录列表
     pub async fn get_child_directories(&self, parent_id: Option<&str>) -> Result<Vec<DirectoryInfo>> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT id, name, parent_id, path, created_at, updated_at FROM directories WHERE parent_id IS ?1 ORDER BY name"
         ).map_err(FileManagerError::Database)?;
 
@@ -185,7 +193,8 @@ impl DatabaseService {
 
     /// 删除目录（级联删除子目录和文件）
     pub async fn delete_directory(&self, id: &str) -> Result<()> {
-        self.connection.execute(
+        let conn = self.connection.lock().unwrap();
+        conn.execute(
             "DELETE FROM directories WHERE id = ?1",
             params![id],
         ).map_err(FileManagerError::Database)?;
@@ -206,7 +215,8 @@ impl DatabaseService {
         let id = Uuid::new_v4().to_string();
         let now = Local::now();
         
-        self.connection.execute(
+        let conn = self.connection.lock().unwrap();
+        conn.execute(
             r#"
             INSERT INTO files (id, name, original_name, directory_id, file_path, file_size, mime_type, created_at, updated_at)
             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
@@ -239,7 +249,8 @@ impl DatabaseService {
 
     /// 获取文件信息
     pub async fn get_file(&self, id: &str) -> Result<Option<FileInfo>> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT id, name, original_name, directory_id, file_path, file_size, mime_type, created_at, updated_at FROM files WHERE id = ?1"
         ).map_err(FileManagerError::Database)?;
 
@@ -254,9 +265,10 @@ impl DatabaseService {
         }
     }
 
-    /// 获取目录中的文件列表
+    /// 获取目录下的所有文件
     pub async fn get_files_in_directory(&self, directory_id: &str) -> Result<Vec<FileInfo>> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT id, name, original_name, directory_id, file_path, file_size, mime_type, created_at, updated_at FROM files WHERE directory_id = ?1 ORDER BY name"
         ).map_err(FileManagerError::Database)?;
 
@@ -274,17 +286,18 @@ impl DatabaseService {
 
     /// 删除文件记录
     pub async fn delete_file(&self, id: &str) -> Result<()> {
-        self.connection.execute(
+        let conn = self.connection.lock().unwrap();
+        conn.execute(
             "DELETE FROM files WHERE id = ?1",
             params![id],
         ).map_err(FileManagerError::Database)?;
-
         Ok(())
     }
 
-    /// 获取完整的目录树结构
+    /// 获取完整的目录树
     pub async fn get_directory_tree(&self) -> Result<Vec<DirectoryInfo>> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT id, name, parent_id, path, created_at, updated_at FROM directories ORDER BY path"
         ).map_err(FileManagerError::Database)?;
 
@@ -302,7 +315,8 @@ impl DatabaseService {
 
     /// 检查路径是否已存在
     pub async fn path_exists(&self, path: &str) -> Result<bool> {
-        let mut stmt = self.connection.prepare(
+        let conn = self.connection.lock().unwrap();
+        let mut stmt = conn.prepare(
             "SELECT COUNT(*) FROM directories WHERE path = ?1"
         ).map_err(FileManagerError::Database)?;
 

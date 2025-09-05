@@ -106,7 +106,7 @@ impl<T> From<Result<T>> for CommandResponse<T> {
 pub async fn upload_file(
     command: UploadFileCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<UploadResponse>, String> {
+) -> std::result::Result<CommandResponse<UploadResponse>, String> {
     // 参数验证
     if command.file_data.is_empty() {
         return Ok(CommandResponse::error("File data cannot be empty".to_string()));
@@ -138,7 +138,7 @@ pub async fn upload_file(
 pub async fn create_directory(
     command: CreateDirectoryCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<CreateDirectoryResponse>, String> {
+) -> std::result::Result<CommandResponse<CreateDirectoryResponse>, String> {
     // 参数验证
     if command.name.trim().is_empty() {
         return Ok(CommandResponse::error("Directory name cannot be empty".to_string()));
@@ -167,7 +167,7 @@ pub async fn create_directory(
 pub async fn delete_file(
     command: DeleteFileCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<()>, String> {
+) -> std::result::Result<CommandResponse<()>, String> {
     // 参数验证
     if command.file_id.trim().is_empty() {
         return Ok(CommandResponse::error("File ID cannot be empty".to_string()));
@@ -185,7 +185,7 @@ pub async fn delete_file(
 pub async fn delete_directory(
     command: DeleteDirectoryCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<()>, String> {
+) -> std::result::Result<CommandResponse<()>, String> {
     // 参数验证
     if command.directory_id.trim().is_empty() {
         return Ok(CommandResponse::error("Directory ID cannot be empty".to_string()));
@@ -202,7 +202,7 @@ pub async fn delete_directory(
 #[tauri::command]
 pub async fn get_directory_tree(
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<Vec<DirectoryTreeNode>>, String> {
+) -> std::result::Result<CommandResponse<Vec<DirectoryTreeNode>>, String> {
     let service = service.lock().await;
     let result = service.get_directory_tree().await;
     Ok(CommandResponse::from(result))
@@ -215,7 +215,7 @@ pub async fn get_directory_tree(
 pub async fn get_directory_files(
     command: GetDirectoryFilesCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<Vec<FileListItem>>, String> {
+) -> std::result::Result<CommandResponse<Vec<FileListItem>>, String> {
     // 参数验证
     if command.directory_id.trim().is_empty() {
         return Ok(CommandResponse::error("Directory ID cannot be empty".to_string()));
@@ -233,7 +233,7 @@ pub async fn get_directory_files(
 pub async fn get_file_info(
     command: GetFileInfoCommand,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<Option<FileListItem>>, String> {
+) -> std::result::Result<CommandResponse<Option<FileListItem>>, String> {
     // 参数验证
     if command.file_id.trim().is_empty() {
         return Ok(CommandResponse::error("File ID cannot be empty".to_string()));
@@ -251,7 +251,7 @@ pub async fn get_file_info(
 pub async fn upload_multiple_files(
     files: Vec<UploadFileCommand>,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<Vec<UploadResponse>>, String> {
+) -> std::result::Result<CommandResponse<Vec<UploadResponse>>, String> {
     // 参数验证
     if files.is_empty() {
         return Ok(CommandResponse::error("No files to upload".to_string()));
@@ -308,7 +308,7 @@ pub async fn search_files(
     query: String,
     directory_id: Option<String>,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<Vec<FileListItem>>, String> {
+) -> std::result::Result<CommandResponse<Vec<FileListItem>>, String> {
     // 参数验证
     if query.trim().is_empty() {
         return Ok(CommandResponse::error("Search query cannot be empty".to_string()));
@@ -368,7 +368,7 @@ pub struct StorageStats {
 #[tauri::command]
 pub async fn get_storage_stats(
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<StorageStats>, String> {
+) -> std::result::Result<CommandResponse<StorageStats>, String> {
     let service = service.lock().await;
     
     // 获取目录树统计
@@ -418,7 +418,7 @@ pub async fn get_storage_stats(
 pub async fn validate_file_type(
     filename: String,
     service: State<'_, FileManagerState>,
-) -> Result<CommandResponse<bool>, String> {
+) -> std::result::Result<CommandResponse<bool>, String> {
     if filename.trim().is_empty() {
         return Ok(CommandResponse::error("Filename cannot be empty".to_string()));
     }
