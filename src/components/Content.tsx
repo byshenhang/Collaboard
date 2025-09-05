@@ -135,51 +135,99 @@ function AssetGridItem({
 }) {
   return (
     <div
-      className={`relative group cursor-pointer rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 ${
-        isSelected
-          ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100 shadow-xl'
-          : 'hover:shadow-lg'
-      }`}
+      className={`
+        group relative cursor-pointer select-none
+        bg-base-200/60 backdrop-blur-sm
+        border border-base-300/30
+        transition-all
+        hover:bg-base-200/80 hover:border-base-300/50
+        hover:scale-[1.03] hover:-translate-y-0.5
+        ${isSelected ? 'ring-2 ring-primary/50 bg-base-200/80 border-primary/40' : ''}
+      `}
+      style={{
+        borderRadius: 'var(--rounded-lg)',
+        boxShadow: isSelected 
+          ? 'var(--shadow-glow), var(--shadow-card-hover)' 
+          : 'var(--shadow-card)',
+        background: isSelected
+          ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 100%), var(--gradient-card)'
+          : 'var(--gradient-card)',
+        transition: 'all var(--transition-smooth)'
+      }}
       onClick={(e) => onSelect(e.ctrlKey || e.metaKey)}
       onDoubleClick={onDoubleClick}
     >
-      {/* 缩略图容器 */}
-      <div className="aspect-square bg-gradient-to-br from-base-200 to-base-300 flex items-center justify-center relative overflow-hidden">
+      <div 
+        className="relative aspect-square overflow-hidden group-hover:scale-[1.02]"
+        style={{
+          borderRadius: 'calc(var(--rounded-lg) - 2px)',
+          transition: 'transform var(--transition-smooth)'
+        }}
+      >
         {asset.thumbnailUrl ? (
           <img
             src={asset.thumbnailUrl}
             alt={asset.name}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-110 group-hover:brightness-110"
           />
         ) : (
-          <div className="text-base-content/30 text-4xl">
+          <div className="text-base-content/40 text-5xl transition-all duration-300 group-hover:text-base-content/60 group-hover:scale-110">
             {getAssetTypeIcon(asset.type)}
           </div>
         )}
         
         {/* 渐变遮罩 */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* 悬停时的光晕效果 */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
-      {/* 选中状态指示器 */}
-      {isSelected && (
-        <div className="absolute top-3 right-3 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-lg animate-pulse">
-          <svg className="w-4 h-4 text-primary-content" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        </div>
-      )}
+        {/* 选中状态指示器 */}
+        {isSelected && (
+          <div 
+            className="absolute top-2 right-2 w-4 h-4 bg-primary rounded-full flex items-center justify-center z-20"
+            style={{
+              boxShadow: 'var(--shadow-glow)',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
+            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+          </div>
+        )}
 
       {/* 文件信息 */}
-      <div className="p-3 bg-base-100/95 backdrop-blur-sm">
-        <p className="text-sm font-semibold truncate mb-1" title={asset.name}>
+      <div className="p-2.5 space-y-1.5">
+        <div 
+          className="text-xs font-medium text-base-content/85 truncate group-hover:text-base-content leading-tight"
+          style={{
+            transition: 'color var(--transition-fast)'
+          }}
+          title={asset.name}
+        >
           {asset.name}
-        </p>
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-base-content/60">
+        </div>
+        
+        <div className="flex items-center justify-between text-xs text-base-content/55">
+          <span className="truncate flex-1 mr-1.5 text-xs">
             {formatFileSize(asset.size)}
-          </p>
-          <div className="badge badge-xs badge-outline">
+          </span>
+          
+          {/* 类型徽章 */}
+          <div 
+            className={`
+              px-1.5 py-0.5 rounded text-xs font-medium shrink-0
+              ${asset.type === AssetType.Image ? 'bg-blue-500/15 text-blue-400' :
+                asset.type === AssetType.Video ? 'bg-purple-500/15 text-purple-400' :
+                asset.type === AssetType.Audio ? 'bg-green-500/15 text-green-400' :
+                asset.type === AssetType.Document ? 'bg-orange-500/15 text-orange-400' :
+                'bg-gray-500/15 text-gray-400'}
+            `}
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              transition: 'all var(--transition-fast)'
+            }}
+          >
             {asset.type}
           </div>
         </div>
@@ -204,16 +252,20 @@ function AssetListItem({
 }) {
   return (
     <tr
-      className={`group cursor-pointer transition-all duration-200 ${
+      className={`group cursor-pointer ${
         isSelected 
-          ? 'bg-gradient-to-r from-primary/20 to-primary/10 shadow-md' 
-          : 'hover:bg-base-200/70 hover:shadow-sm'
+          ? 'bg-gradient-to-r from-primary/20 to-primary/10' 
+          : 'hover:bg-base-200/50'
       }`}
+      style={{
+        transition: 'all var(--transition-fast)',
+        boxShadow: isSelected ? 'var(--shadow-soft)' : 'none'
+      }}
       onClick={(e) => onSelect(e.ctrlKey || e.metaKey)}
       onDoubleClick={onDoubleClick}
     >
       <td className="w-12">
-        <div className="w-10 h-10 bg-gradient-to-br from-base-200 to-base-300 rounded-xl overflow-hidden shadow-sm">
+        <div className="w-10 h-10 bg-gradient-to-br from-base-200/50 to-base-300/30 overflow-hidden" style={{borderRadius: 'var(--rounded-lg)', boxShadow: 'var(--shadow-soft)'}}>
           {asset.thumbnailUrl ? (
             <img
               src={asset.thumbnailUrl}
@@ -271,18 +323,18 @@ export default function Content({
   };
 
   return (
-    <main className="flex-1 flex flex-col bg-gradient-to-br from-base-100 to-base-200/20">
+    <main className="flex-1 flex flex-col bg-gradient-to-br from-base-100 to-base-200/10">
       {/* 工具栏 */}
-      <div className="h-14 border-b border-base-300/50 bg-base-100/80 backdrop-blur-sm flex items-center justify-between px-6 shadow-sm">
+      <div className="h-14 border-b border-base-300/30 bg-base-100/90 backdrop-blur-md flex items-center justify-between px-6" style={{boxShadow: 'var(--shadow-soft)'}}>
         <div className="flex items-center gap-4">
           {/* 筛选按钮 */}
-          <button className="btn btn-outline btn-sm gap-2">
+          <button className="btn btn-outline btn-sm gap-2 hover:shadow-md" style={{transition: 'all var(--transition-fast)'}}>
             <AdjustmentsHorizontalIcon className="w-4 h-4" />
             筛选
           </button>
           
           {/* 资源统计 */}
-          <div className="stats stats-horizontal shadow-sm bg-base-100/50">
+          <div className="stats stats-horizontal bg-base-100/60 backdrop-blur-sm" style={{boxShadow: 'var(--shadow-soft)'}}>
             <div className="stat py-2 px-4">
               <div className="stat-value text-lg text-primary">{assets.length}</div>
               <div className="stat-desc text-xs">个资源</div>
@@ -317,7 +369,8 @@ export default function Content({
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4">
+        {/* 减少内边距以增加内容显示区域 */}
         {loading ? (
           /* 加载状态 */
           <div className="flex flex-col items-center justify-center h-64">
@@ -335,7 +388,8 @@ export default function Content({
           </div>
         ) : viewType === 'grid' ? (
           /* 网格视图 */
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 2xl:grid-cols-11 gap-3">
+            {/* 优化后的网格布局：更紧凑的间距，更多列数以匹配Eagle风格 */}
             {assets.map((asset) => (
               <AssetGridItem
                 key={asset.id}
@@ -349,30 +403,34 @@ export default function Content({
         ) : (
           /* 列表视图 */
           <div className="overflow-x-auto">
-            <table className="table table-sm table-zebra bg-base-100 shadow-sm rounded-lg">
+            <table className="table table-sm table-zebra bg-base-100/90 backdrop-blur-sm" style={{borderRadius: 'var(--rounded-lg)', boxShadow: 'var(--shadow-soft)'}}>
               <thead>
-                <tr className="bg-base-200">
+                <tr className="bg-base-200/70">
                   <th></th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 transition-colors"
+                    className="cursor-pointer hover:bg-base-300/50"
+                    style={{transition: 'background-color var(--transition-fast)'}}
                     onClick={() => handleSortClick('name')}
                   >
                     名称 {sortField === 'name' && (sortDirection === 'desc' ? '↓' : '↑')}
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 transition-colors"
+                    className="cursor-pointer hover:bg-base-300/50"
+                    style={{transition: 'background-color var(--transition-fast)'}}
                     onClick={() => handleSortClick('type')}
                   >
                     类型 {sortField === 'type' && (sortDirection === 'desc' ? '↓' : '↑')}
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 transition-colors"
+                    className="cursor-pointer hover:bg-base-300/50"
+                    style={{transition: 'background-color var(--transition-fast)'}}
                     onClick={() => handleSortClick('size')}
                   >
                     大小 {sortField === 'size' && (sortDirection === 'desc' ? '↓' : '↑')}
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 transition-colors"
+                    className="cursor-pointer hover:bg-base-300/50"
+                    style={{transition: 'background-color var(--transition-fast)'}}
                     onClick={() => handleSortClick('date')}
                   >
                     修改日期 {sortField === 'date' && (sortDirection === 'desc' ? '↓' : '↑')}

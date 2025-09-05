@@ -45,17 +45,17 @@ export default function Header({
   onSettingsClick
 }: HeaderProps) {
   return (
-    <header className="h-16 bg-gradient-to-r from-primary/5 to-secondary/5 backdrop-blur-sm border-b border-base-300/50 flex items-center px-6 gap-6 shadow-sm">
+    <header className="h-14 bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-lg border-b border-base-300/30 flex items-center px-4 gap-4" style={{boxShadow: 'var(--shadow-soft)'}}>
       {/* Logo区域 */}
       <div className="flex items-center gap-3 min-w-fit">
-        <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg">
-          <span className="text-primary-content font-bold text-lg">EA</span>
+        <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center" style={{boxShadow: 'var(--shadow-medium)'}}>
+          <span className="text-primary-content font-bold text-sm">EA</span>
         </div>
         <div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden sm:block">
+          <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent hidden sm:block">
             Eagle Assets
           </h1>
-          <p className="text-xs text-base-content/60 hidden sm:block">资产管理工具</p>
+          <p className="text-xs text-base-content/60 hidden sm:block leading-none">资产管理工具</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function Header({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
-        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-lg border border-base-300">
+        <ul tabIndex={0} className="dropdown-content menu bg-base-100/95 backdrop-blur-md rounded-box z-[1] w-52 p-2 border border-base-300/50" style={{boxShadow: 'var(--shadow-strong)'}}>
           {libraries.map((library) => (
             <li key={library}>
               <a 

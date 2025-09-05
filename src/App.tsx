@@ -254,7 +254,7 @@ function App() {
   };
   
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-base-100" data-theme="dark">
       {/* 顶部导航栏 */}
       <Header
         libraries={libraries}

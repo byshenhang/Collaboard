@@ -64,17 +64,22 @@ function FolderTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer group ${
           isSelected 
-            ? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary border-l-2 border-primary shadow-sm' 
-            : 'hover:bg-base-200/70 hover:shadow-sm'
+            ? 'bg-gradient-to-r from-primary/25 to-primary/15 text-primary border-l-2 border-primary' 
+            : 'hover:bg-base-200/80'
         }`}
-        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        style={{
+          paddingLeft: `${level * 16 + 8}px`,
+          transition: 'all var(--transition-fast)',
+          boxShadow: isSelected ? 'var(--shadow-soft)' : 'none'
+        }}
         onClick={() => onFolderSelect(node.id)}
       >
         {/* 展开/收起图标 */}
         <button
-          className="w-4 h-4 flex items-center justify-center hover:bg-base-300/70 rounded transition-colors duration-150"
+          className="w-4 h-4 flex items-center justify-center hover:bg-base-300/80 rounded"
+          style={{transition: 'background-color var(--transition-fast)'}}
           onClick={(e) => {
             e.stopPropagation();
             if (hasChildren) {
@@ -94,9 +99,9 @@ function FolderTreeNode({
         </button>
 
         {/* 文件夹图标 */}
-        <FolderIcon className={`w-4 h-4 transition-colors duration-200 ${
+        <FolderIcon className={`w-4 h-4 ${
           isSelected ? 'text-primary' : 'text-warning group-hover:text-warning/80'
-        }`} />
+        }`} style={{transition: 'color var(--transition-fast)'}} />
 
         {/* 文件夹名称 */}
         <span className="flex-1 text-sm truncate font-medium">{node.name}</span>
@@ -105,9 +110,9 @@ function FolderTreeNode({
         {node.assetCount !== undefined && (
           <span className={`text-xs px-2 py-0.5 rounded-full ${
             isSelected 
-              ? 'bg-primary/20 text-primary' 
+              ? 'bg-primary/25 text-primary' 
               : 'bg-base-content/10 text-base-content/60 group-hover:bg-base-content/20'
-          }`}>
+          }`} style={{transition: 'all var(--transition-fast)'}}>
             {node.assetCount}
           </span>
         )}
@@ -150,22 +155,30 @@ export default function Sidebar({
   const [activeTab, setActiveTab] = useState<'folders' | 'tags'>('folders');
 
   return (
-    <aside className="w-80 bg-gradient-to-b from-base-100 to-base-200/30 border-r border-base-300/50 flex flex-col shadow-sm">
+    <aside className="w-72 bg-gradient-to-b from-base-100 to-base-200/20 border-r border-base-300/30 flex flex-col" style={{boxShadow: 'var(--shadow-soft)'}}>
       {/* 标签页切换 */}
-      <div className="tabs tabs-boxed m-3 shadow-sm">
+      <div className="tabs tabs-boxed m-2 bg-base-200/50 backdrop-blur-sm" style={{boxShadow: 'var(--shadow-soft)'}}>
         <button
-          className={`tab tab-sm flex-1 transition-all duration-200 ${
-            activeTab === 'folders' ? 'tab-active shadow-md' : 'hover:bg-base-200'
+          className={`tab tab-sm flex-1 ${
+            activeTab === 'folders' ? 'tab-active' : 'hover:bg-base-200/80'
           }`}
+          style={{
+            transition: 'all var(--transition-fast)',
+            boxShadow: activeTab === 'folders' ? 'var(--shadow-soft)' : 'none'
+          }}
           onClick={() => setActiveTab('folders')}
         >
           <FolderIcon className="w-4 h-4 mr-1" />
           文件夹
         </button>
         <button
-          className={`tab tab-sm flex-1 transition-all duration-200 ${
-            activeTab === 'tags' ? 'tab-active shadow-md' : 'hover:bg-base-200'
+          className={`tab tab-sm flex-1 ${
+            activeTab === 'tags' ? 'tab-active' : 'hover:bg-base-200/80'
           }`}
+          style={{
+            transition: 'all var(--transition-fast)',
+            boxShadow: activeTab === 'tags' ? 'var(--shadow-soft)' : 'none'
+          }}
           onClick={() => setActiveTab('tags')}
         >
           <TagIcon className="w-4 h-4 mr-1" />
@@ -174,10 +187,10 @@ export default function Sidebar({
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto px-2 pb-2">
         {activeTab === 'folders' ? (
           /* 文件夹树 */
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {folders.map((folder) => (
               <FolderTreeNode
                 key={folder.id}
@@ -190,23 +203,30 @@ export default function Sidebar({
           </div>
         ) : (
           /* 标签列表 */
-          <div className="space-y-2">
+          <div className="space-y-1">
             {tags.map((tag) => {
               const isSelected = selectedTagIds.includes(tag.id);
               return (
                 <div
                   key={tag.id}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group ${
+                  className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer group ${
                     isSelected 
-                      ? 'bg-gradient-to-r from-primary/20 to-primary/10 border-l-2 border-primary shadow-sm' 
-                      : 'hover:bg-base-200/70 hover:shadow-sm'
+                      ? 'bg-gradient-to-r from-primary/25 to-primary/15 border-l-2 border-primary' 
+                      : 'hover:bg-base-200/80'
                   }`}
+                  style={{
+                    transition: 'all var(--transition-fast)',
+                    boxShadow: isSelected ? 'var(--shadow-soft)' : 'none'
+                  }}
                   onClick={() => onTagToggle(tag.id)}
                 >
                   {/* 标签颜色指示器 */}
                   <div
-                    className="w-3 h-3 rounded-full shadow-sm"
-                    style={{ backgroundColor: tag.color }}
+                    className="w-3 h-3 rounded-full"
+                    style={{ 
+                      backgroundColor: tag.color,
+                      boxShadow: 'var(--shadow-soft)'
+                    }}
                   />
 
                   {/* 标签名称 */}
@@ -215,15 +235,15 @@ export default function Sidebar({
                   {/* 资源数量 */}
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isSelected 
-                      ? 'bg-primary/20 text-primary' 
+                      ? 'bg-primary/25 text-primary' 
                       : 'bg-base-content/10 text-base-content/60 group-hover:bg-base-content/20'
-                  }`}>
+                  }`} style={{transition: 'all var(--transition-fast)'}}>
                     {tag.count}
                   </span>
 
                   {/* 选中状态 */}
                   {isSelected && (
-                    <div className="w-2 h-2 bg-primary rounded-full shadow-sm" />
+                    <div className="w-2 h-2 bg-primary rounded-full" style={{boxShadow: 'var(--shadow-soft)'}} />
                   )}
                 </div>
               );

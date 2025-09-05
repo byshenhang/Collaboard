@@ -1,20 +1,210 @@
 @import "tailwindcss";
+
+/* DaisyUI插件配置 - 适配Tailwind CSS 4.0 */
 @plugin "daisyui" {
-  themes:
-    "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
-    "synthwave", "retro", "cyberpunk", "valentine", "halloween", "garden",
-    "forest", "aqua", "lofi", "pastel", "fantasy", "wireframe", "black",
-    "luxury", "dracula", "cmyk", "autumn", "business", "acid", "lemonade",
-    "night", "coffee", "winter", "dim", "nord", "sunset"
-  ;
+  themes: dark --default, night, dracula;
+}
+
+/* 自定义深色主题配置 */
+@plugin "daisyui/theme" {
+  name: "collaboard-dark";
+  primary: #3b82f6;
+  "primary-content": #ffffff;
+  secondary: #8b5cf6;
+  "secondary-content": #ffffff;
+  accent: #06b6d4;
+  "accent-content": #ffffff;
+  neutral: #1f2937;
+  "neutral-content": #d1d5db;
+  "base-100": #0f172a;
+  "base-200": #1e293b;
+  "base-300": #334155;
+  "base-content": #f1f5f9;
+  info: #0ea5e9;
+  "info-content": #ffffff;
+  success: #10b981;
+  "success-content": #ffffff;
+  warning: #f59e0b;
+  "warning-content": #ffffff;
+  error: #ef4444;
+  "error-content": #ffffff;
+}
+
+/* 自定义CSS变量 */
+:root {
+  /* 阴影和模糊效果 - 参考Eagle风格 */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.1), 0 1px 6px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+  --blur-backdrop: blur(12px);
+  
+  /* 过渡动画 - 更流畅的动画曲线 */
+  --transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  
+  /* 边框圆角 - 更现代的圆角设计 */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --rounded-lg: 1rem;
+  
+  /* 发光效果 - 更柔和的发光 */
+  --shadow-glow: 0 0 24px rgba(59, 130, 246, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-glow-accent: 0 0 20px rgba(139, 92, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+  
+  /* 渐变背景 */
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --gradient-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+}
+
+/* 深色主题增强 - Eagle风格阴影 */
+[data-theme="collaboard-dark"] {
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.4), 0 1px 6px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-strong: 0 8px 32px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 2px 16px rgba(0, 0, 0, 0.3), 0 1px 8px rgba(0, 0, 0, 0.15);
+  --shadow-card-hover: 0 4px 24px rgba(0, 0, 0, 0.4), 0 2px 12px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 32px rgba(59, 130, 246, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-glow-accent: 0 0 24px rgba(139, 92, 246, 0.25), 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 全局样式和过渡效果 */
 html {
-  transition: color-scheme 0.3s ease;
+  transition: color-scheme var(--transition-normal);
+  color-scheme: dark;
 }
 
 /* 确保 body 使用主题颜色 */
 body {
   @apply bg-base-100 text-base-content;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 滚动条样式优化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-base-200;
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-300 hover:bg-neutral;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral;
+}
+
+/* 选择文本样式 */
+::selection {
+  @apply bg-primary/30 text-primary-content;
+}
+
+/* 焦点样式优化 */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary/50 ring-offset-2 ring-offset-base-100;
+  transition: box-shadow var(--transition-fast);
+}
+
+/* 微交互效果 */
+.hover-lift {
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* 按钮增强效果 */
+.btn {
+  transition: all var(--transition-smooth);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+/* 卡片悬停效果增强 */
+.card-hover {
+  transition: all var(--transition-smooth);
+  will-change: transform, box-shadow;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* 平滑的背景过渡 */
+.bg-transition {
+  transition: background-color var(--transition-smooth), border-color var(--transition-smooth);
+}
+
+/* 文字颜色过渡 */
+.text-transition {
+  transition: color var(--transition-smooth);
+}
+
+/* 脉冲动画优化 */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 渐入动画 */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* 缩放进入动画 */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scale-in 0.2s ease-out;
 }
