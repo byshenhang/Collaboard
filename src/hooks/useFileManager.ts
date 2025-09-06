@@ -16,6 +16,7 @@ import type {
   FileFilterConfig,
   StorageStats,
   UseFileManagerReturn,
+  DirectoryTreeNode,
 } from '../types/fileManager';
 
 /**
@@ -67,17 +68,47 @@ export function useFileManager(): UseFileManagerReturn {
   }, [updateState]);
 
   /**
+   * 将扁平的目录列表构建为树结构
+   */
+  const buildDirectoryTree = useCallback((flatList: DirectoryTreeNode[]): DirectoryTreeNode[] => {
+    const nodeMap = new Map<string, DirectoryTreeNode>();
+    const rootNodes: DirectoryTreeNode[] = [];
+
+    // 创建节点映射
+    flatList.forEach(node => {
+      nodeMap.set(node.id, { ...node, children: [] });
+    });
+
+    // 构建树结构
+    flatList.forEach(node => {
+      const treeNode = nodeMap.get(node.id)!;
+      
+      if (node.parent_id && nodeMap.has(node.parent_id)) {
+        // 有父节点，添加到父节点的children中
+        const parentNode = nodeMap.get(node.parent_id)!;
+        parentNode.children.push(treeNode);
+      } else {
+        // 没有父节点或父节点不存在，作为根节点
+        rootNodes.push(treeNode);
+      }
+    });
+
+    return rootNodes;
+  }, []);
+
+  /**
    * 加载目录树
    */
   const loadDirectoryTree = useCallback(async () => {
     try {
       updateState({ loading: true, error: undefined });
-      const tree = await FileManagerService.getDirectoryTree();
+      const flatTree = await FileManagerService.getDirectoryTree();
+      const tree = buildDirectoryTree(flatTree);
       updateState({ directoryTree: tree, loading: false });
     } catch (error) {
       setError(error as Error);
     }
-  }, [updateState, setError]);
+  }, [updateState, setError, buildDirectoryTree]);
 
   /**
    * 加载目录文件
