@@ -368,7 +368,7 @@ export default function Content({
       </div>
 
       {/* 内容区域 */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-hidden p-4 flex flex-col">
         {/* 减少内边距以增加内容显示区域 */}
         {loading ? (
           /* 加载状态 */
@@ -387,7 +387,8 @@ export default function Content({
           </div>
         ) : viewType === 'grid' ? (
           /* 网格视图 */
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 2xl:grid-cols-11 gap-3">
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-9 2xl:grid-cols-11 gap-3">
             {/* 优化后的网格布局：更紧凑的间距，更多列数以匹配Eagle风格 */}
             {assets.map((asset) => (
               <AssetGridItem
@@ -398,10 +399,12 @@ export default function Content({
                 onDoubleClick={() => onAssetDoubleClick(asset)}
               />
             ))}
+            </div>
           </div>
         ) : (
           /* 列表视图 */
-          <div className="overflow-x-auto">
+          <div className="flex-1 overflow-y-auto">
+            <div className="overflow-x-auto">
             <table className="table table-sm table-zebra bg-base-100/90 backdrop-blur-sm" style={{borderRadius: 'var(--rounded-lg)', boxShadow: 'var(--shadow-soft)'}}>
               <thead>
                 <tr className="bg-base-200/70">
@@ -448,6 +451,7 @@ export default function Content({
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

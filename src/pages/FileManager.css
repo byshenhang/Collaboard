@@ -6,7 +6,7 @@
 .file-manager {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background: var(--color-background);
   color: var(--color-text-primary);
   overflow: hidden;
@@ -66,6 +66,7 @@
 .file-manager__content {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -125,6 +126,7 @@
 
 .file-manager__sidebar-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 0.5rem;
 }
@@ -152,8 +154,11 @@
 /* 文件列表区域 */
 .file-manager__file-section {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 错误提示 */
