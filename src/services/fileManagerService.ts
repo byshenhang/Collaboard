@@ -15,6 +15,7 @@ import type {
   DeleteDirectoryCommand,
   GetDirectoryFilesCommand,
   GetFileInfoCommand,
+  ReadFileContentCommand,
   DirectoryTreeNode,
   FileListItem,
   StorageStats,
@@ -258,6 +259,44 @@ export class FileManagerService {
 
     return response.data || false;
   }
+
+  /**
+   * 读取文件内容
+   */
+  static async readFileContent(fileId: string): Promise<Uint8Array> {
+    const command: ReadFileContentCommand = {
+      file_id: fileId,
+    };
+    
+    const response = await invoke<CommandResponse<number[]>>('read_file_content', { command });
+    
+    if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to read file content');
+    }
+
+    return new Uint8Array(response.data);
+  }
+
+  /**
+   * 生成文件预览 URL（如果支持）
+   */
+  static async generatePreviewUrl(file: FileListItem): Promise<string | null> {
+    if (!FileUtils.isImageFile(file.name)) {
+      return null;
+    }
+    
+    try {
+      // 读取文件内容
+      const fileContent = await FileManagerService.readFileContent(file.id);
+      
+      // 创建 Blob URL
+      const blob = new Blob([fileContent], { type: file.mime_type });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Failed to generate preview URL:', error);
+      return null;
+    }
+  }
 }
 
 /**
@@ -365,17 +404,7 @@ export class FileUtils {
     return ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv'].includes(extension);
   }
 
-  /**
-   * 生成文件预览 URL（如果支持）
-   */
-  static generatePreviewUrl(file: FileListItem): string | null {
-    if (this.isImageFile(file.name)) {
-      // 这里应该返回实际的文件访问 URL
-      // 在实际应用中，可能需要通过 Tauri 提供文件服务
-      return `file://${file.name}`; // 占位符
-    }
-    return null;
-  }
+
 
   /**
    * 验证文件名

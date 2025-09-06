@@ -366,7 +366,8 @@ pub fn run() {
             upload_multiple_files,
             search_files,
             get_storage_stats,
-            validate_file_type
+            validate_file_type,
+            read_file_content
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

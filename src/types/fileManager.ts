@@ -90,6 +90,14 @@ export interface GetFileInfoCommand {
   [key: string]: unknown;
 }
 
+/**
+ * 读取文件内容请求
+ */
+export interface ReadFileContentCommand {
+  file_id: string;
+  [key: string]: unknown;
+}
+
 
 
 /**

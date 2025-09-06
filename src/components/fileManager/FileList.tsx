@@ -17,7 +17,6 @@ import {
   getFileTypeInfo,
   isImageFile,
   canPreviewFile,
-  generatePreviewUrl,
   getFileNameWithoutExtension,
   getFileExtension,
   formatFileSize,
@@ -25,6 +24,7 @@ import {
   filterFiles,
   sortFiles,
 } from '../../utils/fileUtils';
+import { FileManagerService } from '../../services/fileManagerService';
 import './FileList.css';
 
 export interface FileListProps {
@@ -126,11 +126,17 @@ const FileItem: React.FC<FileItemProps> = ({
   // 生成预览URL
   useEffect(() => {
     if (isImage && file.path) {
-      const url = generatePreviewUrl(file);
-      setPreviewUrl(url);
+      FileManagerService.generatePreviewUrl(file).then((url: string | null) => {
+        setPreviewUrl(url);
+      }).catch((error: any) => {
+        console.error('Failed to generate preview URL:', error);
+        setPreviewUrl(null);
+      });
+      
       return () => {
-        if (url) {
-          // URL cleanup handled by browser
+        // Cleanup will be handled when component unmounts
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
         }
       };
     }

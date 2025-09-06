@@ -61,6 +61,12 @@ pub struct GetFileInfoCommand {
     pub file_id: String,
 }
 
+/// 读取文件内容命令参数
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReadFileContentCommand {
+    pub file_id: String,
+}
+
 /// 命令响应包装器
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandResponse<T> {
@@ -459,6 +465,36 @@ pub async fn validate_file_type(
     
     let is_supported = supported_extensions.contains(&extension.as_str());
     Ok(CommandResponse::success(is_supported))
+}
+
+/// 读取文件内容命令
+/// 
+/// 读取指定文件的二进制内容，用于预览等功能
+#[tauri::command]
+pub async fn read_file_content(
+    command: ReadFileContentCommand,
+    service: State<'_, FileManagerState>,
+) -> std::result::Result<CommandResponse<Vec<u8>>, String> {
+    tracing::info!("读取文件内容: file_id={}", command.file_id);
+    
+    // 参数验证
+    if command.file_id.trim().is_empty() {
+        return Ok(CommandResponse::error("File ID cannot be empty".to_string()));
+    }
+    
+    let service = service.lock().await;
+    let result = service.read_file_content(&command.file_id).await;
+    
+    match &result {
+        Ok(content) => {
+            tracing::info!("文件内容读取成功: file_id={}, size={} bytes", command.file_id, content.len());
+        }
+        Err(e) => {
+            tracing::error!("文件内容读取失败: file_id={}, error={:?}", command.file_id, e);
+        }
+    }
+    
+    Ok(result.into())
 }
 
 #[cfg(test)]

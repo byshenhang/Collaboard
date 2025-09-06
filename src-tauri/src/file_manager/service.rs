@@ -484,6 +484,21 @@ impl FileManagerService {
         }
     }
 
+    /// 读取文件内容
+    pub async fn read_file_content(&self, file_id: &str) -> Result<Vec<u8>> {
+        tracing::debug!("读取文件内容: file_id={}", file_id);
+        
+        // 获取文件信息
+        let file_info = self.db_service.get_file(file_id).await?
+            .ok_or_else(|| FileManagerError::general_error(format!("文件不存在: {}", file_id)))?;
+        
+        // 读取文件内容
+        let content = self.fs_service.read_file(Path::new(&file_info.file_path)).await?;
+        
+        tracing::debug!("成功读取文件内容: file_id={}, size={} bytes", file_id, content.len());
+        Ok(content)
+    }
+
     /// 确保根目录存在
     async fn ensure_root_directory(&self) -> Result<String> {
         // 尝试查找根目录
