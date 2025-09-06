@@ -11,6 +11,10 @@ import type {
   UploadFileResponse,
   CreateDirectoryRequest,
   CreateDirectoryResponse,
+  DeleteFileCommand,
+  DeleteDirectoryCommand,
+  GetDirectoryFilesCommand,
+  GetFileInfoCommand,
   DirectoryTreeNode,
   FileListItem,
   StorageStats,
@@ -28,22 +32,34 @@ export class FileManagerService {
     originalName: string,
     directoryId?: string
   ): Promise<UploadFileResponse> {
+    console.log(`[FileManagerService] 开始上传文件: ${originalName}, 大小: ${fileData.length} bytes, 目录ID: ${directoryId || 'root'}`);
+    
     const request: UploadFileRequest = {
       file_data: Array.from(fileData),
       original_name: originalName,
       directory_id: directoryId,
     };
 
-    const response = await invoke<CommandResponse<UploadFileResponse>>(
-      'upload_file',
-      { command: request }
-    );
+    console.log('[FileManagerService] 调用 Tauri upload_file 命令');
+    try {
+      const response = await invoke<CommandResponse<UploadFileResponse>>(
+        'upload_file',
+        { command: request }
+      );
 
-    if (!response.success || !response.data) {
-      throw new Error(response.error || 'Upload failed');
+      console.log('[FileManagerService] Tauri 响应:', response);
+      
+      if (!response.success || !response.data) {
+        console.error('[FileManagerService] 上传失败:', response.error);
+        throw new Error(response.error || 'Upload failed');
+      }
+
+      console.log(`[FileManagerService] 上传成功: 文件ID=${response.data.file_id}`);
+      return response.data;
+    } catch (error) {
+      console.error('[FileManagerService] 上传异常:', error);
+      throw error;
     }
-
-    return response.data;
   }
 
   /**
@@ -81,20 +97,27 @@ export class FileManagerService {
     name: string,
     parentId?: string
   ): Promise<CreateDirectoryResponse> {
+    console.log('[FileManagerService] 创建目录开始', { name, parentId });
+    
     const request: CreateDirectoryRequest = {
       name,
       parent_id: parentId,
     };
 
+    console.log('[FileManagerService] 调用 Tauri create_directory 命令', request);
     const response = await invoke<CommandResponse<CreateDirectoryResponse>>(
       'create_directory',
       { command: request }
     );
 
+    console.log('[FileManagerService] Tauri 响应:', response);
+    
     if (!response.success || !response.data) {
+      console.error('[FileManagerService] 创建目录失败:', response.error);
       throw new Error(response.error || 'Directory creation failed');
     }
 
+    console.log('[FileManagerService] 创建目录成功:', response.data);
     return response.data;
   }
 
@@ -102,9 +125,11 @@ export class FileManagerService {
    * 删除文件
    */
   static async deleteFile(fileId: string): Promise<void> {
-    const response = await invoke<CommandResponse<void>>('delete_file', {
-      command: { file_id: fileId },
-    });
+    const command: DeleteFileCommand = {
+      file_id: fileId,
+    };
+
+    const response = await invoke<CommandResponse<void>>('delete_file', { command });
 
     if (!response.success) {
       throw new Error(response.error || 'File deletion failed');
@@ -115,9 +140,11 @@ export class FileManagerService {
    * 删除目录
    */
   static async deleteDirectory(directoryId: string): Promise<void> {
-    const response = await invoke<CommandResponse<void>>('delete_directory', {
-      command: { directory_id: directoryId },
-    });
+    const command: DeleteDirectoryCommand = {
+      directory_id: directoryId,
+    };
+
+    const response = await invoke<CommandResponse<void>>('delete_directory', { command });
 
     if (!response.success) {
       throw new Error(response.error || 'Directory deletion failed');
@@ -143,9 +170,13 @@ export class FileManagerService {
    * 获取目录中的文件列表
    */
   static async getDirectoryFiles(directoryId: string): Promise<FileListItem[]> {
+    const command: GetDirectoryFilesCommand = {
+      directory_id: directoryId,
+    };
+
     const response = await invoke<CommandResponse<FileListItem[]>>(
       'get_directory_files',
-      { command: { directory_id: directoryId } }
+      { command }
     );
 
     if (!response.success || !response.data) {
@@ -159,9 +190,13 @@ export class FileManagerService {
    * 获取文件信息
    */
   static async getFileInfo(fileId: string): Promise<FileListItem | null> {
+    const command: GetFileInfoCommand = {
+      file_id: fileId,
+    };
+
     const response = await invoke<CommandResponse<FileListItem | null>>(
       'get_file_info',
-      { command: { file_id: fileId } }
+      { command }
     );
 
     if (!response.success) {

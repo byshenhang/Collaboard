@@ -139,23 +139,27 @@ export function useFileManager(): UseFileManagerReturn {
    * 上传单个文件
    */
   const uploadSingleFile = useCallback(async (
-    uploadItem: UploadItem, 
+    item: UploadItem,
     directoryId?: string
   ): Promise<void> => {
-    const { id, file } = uploadItem;
+    const { id, file } = item;
+    
+    console.log(`[useFileManager] 开始上传单个文件: ${file.name}, 大小: ${file.size} bytes`);
     
     try {
-      // 更新状态为上传中
-      updateUploadItem(id, { status: 'uploading', progress: 0 });
-      
       // 验证文件类型
+      console.log(`[useFileManager] 验证文件类型: ${file.name}`);
       const isValidType = await FileManagerService.validateFileType(file.name);
       if (!isValidType) {
+        console.error(`[useFileManager] 文件类型验证失败: ${file.name}`);
         throw new Error(`不支持的文件类型: ${file.name}`);
       }
+      console.log(`[useFileManager] 文件类型验证通过: ${file.name}`);
       
       // 读取文件数据
+      console.log(`[useFileManager] 读取文件数据: ${file.name}`);
       const fileData = await ServiceFileUtils.fileToUint8Array(file);
+      console.log(`[useFileManager] 文件数据读取完成: ${fileData.length} bytes`);
       
       // 模拟上传进度（实际应用中应该有真实的进度回调）
       const progressInterval = setInterval(() => {
@@ -166,6 +170,7 @@ export function useFileManager(): UseFileManagerReturn {
       }, 100);
       
       // 执行上传
+      console.log(`[useFileManager] 调用 FileManagerService.uploadFile`);
       const result = await FileManagerService.uploadFile(
         fileData,
         file.name,
@@ -173,6 +178,8 @@ export function useFileManager(): UseFileManagerReturn {
       );
       
       clearInterval(progressInterval);
+      
+      console.log(`[useFileManager] 文件上传成功: ${file.name}, 结果:`, result);
       
       // 更新为成功状态
       updateUploadItem(id, {
@@ -182,6 +189,7 @@ export function useFileManager(): UseFileManagerReturn {
       });
       
     } catch (error) {
+      console.error(`[useFileManager] 文件上传失败: ${file.name}`, error);
       // 更新为错误状态
       updateUploadItem(id, {
         status: 'error',
@@ -326,17 +334,24 @@ export function useFileManager(): UseFileManagerReturn {
     name: string, 
     parentId?: string
   ): Promise<void> => {
+    console.log('[useFileManager] 创建目录开始', { name, parentId });
     try {
       updateState({ loading: true, error: undefined });
       
+      console.log('[useFileManager] 调用 FileManagerService.createDirectory');
       await FileManagerService.createDirectory(name, parentId);
+      console.log('[useFileManager] FileManagerService.createDirectory 调用成功');
       
       // 重新加载目录树
+      console.log('[useFileManager] 重新加载目录树');
       await loadDirectoryTree();
+      console.log('[useFileManager] 目录树加载完成');
       
       updateState({ loading: false });
+      console.log('[useFileManager] 创建目录完成');
       
     } catch (error) {
+      console.error('[useFileManager] 创建目录失败:', error);
       setError(error as Error);
     }
   }, [loadDirectoryTree, updateState, setError]);

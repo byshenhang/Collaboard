@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header, { ViewType } from './components/Header';
 import Sidebar, { FolderNode } from './components/Sidebar';
+import EnhancedSidebar, { Tag } from './components/EnhancedSidebar';
 import Content, { Asset, AssetType, SortField, SortDirection } from './components/Content';
+import EnhancedContent from './components/EnhancedContent';
+import type { FileSortField, SortDirection as FileSortDirection, FileListItem } from './types/fileManager';
 import Inspector from './components/Inspector';
 import Footer, { SyncStatus, Task } from './components/Footer';
 import { FileManager } from './pages';
+import { FileManagerProvider, useFileManagerContext } from './contexts/FileManagerContext';
 
 /**
  * 应用模式枚举
@@ -14,7 +18,7 @@ export type AppMode = 'asset-manager' | 'file-manager';
 /**
  * 主应用组件 - Eagle风格的美术资产管理工具
  */
-function App() {
+function AppContent() {
   // 应用模式状态
   const [appMode, setAppMode] = useState<AppMode>('asset-manager');
   
@@ -27,13 +31,29 @@ function App() {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   
+  // 文件管理排序状态
+  const [fileSortField, setFileSortField] = useState<FileSortField>('name');
+  const [fileSortDirection, setFileSortDirection] = useState<FileSortDirection>('asc');
+  
   // 选择状态
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
+  const [selectedDirectoryId, setSelectedDirectoryId] = useState<string | undefined>(undefined);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
   
   // 加载状态
   const [loading] = useState(false);
+  
+  // 使用文件管理器上下文
+  const { loadDirectoryFiles } = useFileManagerContext();
+  
+  // 监听selectedDirectoryId变化
+  useEffect(() => {
+    if (selectedDirectoryId) {
+      loadDirectoryFiles(selectedDirectoryId);
+    }
+  }, [selectedDirectoryId, loadDirectoryFiles]);
   
   // 同步状态
   const [syncStatus] = useState<SyncStatus>('success');
@@ -85,7 +105,7 @@ function App() {
     }
   ];
   
-  const tags = [
+  const tags: Tag[] = [
     { id: 'favorite', name: '收藏', color: '#ef4444', count: 12 },
     { id: 'work', name: '工作', color: '#3b82f6', count: 34 },
     { id: 'personal', name: '个人', color: '#10b981', count: 28 },
@@ -213,6 +233,11 @@ function App() {
     console.log('切换文件夹:', folderId);
   };
   
+  const handleDirectorySelect = (directoryId: string) => {
+    setSelectedDirectoryId(directoryId);
+    console.log('选择目录:', directoryId);
+  };
+  
   const handleTagToggle = (tagId: string) => {
     setSelectedTagIds(prev => 
       prev.includes(tagId) 
@@ -224,6 +249,11 @@ function App() {
   const handleSortChange = (field: SortField, direction: SortDirection) => {
     setSortField(field);
     setSortDirection(direction);
+  };
+  
+  const handleFileSortChange = (field: FileSortField, direction: FileSortDirection) => {
+    setFileSortField(field);
+    setFileSortDirection(direction);
   };
   
   const handleAssetSelect = (assetId: string, multiSelect = false) => {
@@ -240,6 +270,23 @@ function App() {
   
   const handleAssetDoubleClick = (asset: Asset) => {
     console.log('双击资源:', asset.name);
+  };
+  
+  const handleFileSelect = (fileId: string, multiSelect = false) => {
+    if (multiSelect) {
+      setSelectedFileIds(prev => 
+        prev.includes(fileId)
+          ? prev.filter(id => id !== fileId)
+          : [...prev, fileId]
+      );
+    } else {
+      setSelectedFileIds([fileId]);
+    }
+  };
+  
+  const handleFileDoubleClick = (file: FileListItem) => {
+    console.log('双击文件:', file.name);
+    // 这里可以添加文件预览或打开逻辑
   };
   
   const handleNotesUpdate = (assetId: string, notes: string) => {
@@ -285,29 +332,26 @@ function App() {
       {/* 主内容区域 */}
       {appMode === 'asset-manager' ? (
         <div className="flex-1 flex overflow-hidden">
-          {/* 左侧边栏 */}
-          <Sidebar
-            folders={folders}
+          {/* 左侧边栏 - 增强版 */}
+          <EnhancedSidebar
             tags={tags}
-            selectedFolderId={selectedFolderId}
+            selectedDirectoryId={selectedDirectoryId}
             selectedTagIds={selectedTagIds}
-            onFolderSelect={handleFolderSelect}
-            onFolderToggle={handleFolderToggle}
+            onDirectorySelect={handleDirectorySelect}
             onTagToggle={handleTagToggle}
           />
           
           {/* 主内容区 */}
-          <Content
-            assets={mockAssets}
-            viewType={viewType}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            selectedAssetIds={selectedAssetIds}
-            loading={loading}
-            onSortChange={handleSortChange}
-            onAssetSelect={handleAssetSelect}
-            onAssetDoubleClick={handleAssetDoubleClick}
-          />
+          <EnhancedContent
+               selectedDirectoryId={selectedDirectoryId}
+               viewType={viewType}
+               sortField={fileSortField}
+               sortDirection={fileSortDirection}
+               selectedFileIds={selectedFileIds}
+               onFileSelect={handleFileSelect}
+               onFileDoubleClick={handleFileDoubleClick}
+               onSortChange={handleFileSortChange}
+             />
           
           {/* 右侧信息栏 */}
           {selectedAsset && (
@@ -340,6 +384,14 @@ function App() {
         storageTotal={1024 * 1024 * 1024 * 100} // 100GB
       />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <FileManagerProvider>
+      <AppContent />
+    </FileManagerProvider>
   );
 }
 

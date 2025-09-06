@@ -5,9 +5,15 @@ use std::os::raw::{c_char, c_int};
 use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use log::{info, warn, error, debug};
+use tracing::{info as tracing_info, warn as tracing_warn, error as tracing_error, debug as tracing_debug};
 use tokio::sync::Mutex;
 use chrono::Datelike;
 use tauri::Manager;
+
+// 日志模块
+mod logging;
+mod advanced_logging;
+mod config_loader;
 
 // 文件管理模块
 mod file_manager;
@@ -288,12 +294,27 @@ fn get_supported_image_formats() -> Vec<String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // 初始化日志系统
-    env_logger::Builder::from_default_env()
-        .filter_level(log::LevelFilter::Debug)
-        .init();
+    // 加载配置文件
+    let app_config = config_loader::ConfigLoader::load_or_default("log_config.toml");
     
-    info!("Tauri应用程序启动");
+    // 验证配置
+    if let Err(errors) = config_loader::ConfigValidator::validate(&app_config) {
+        eprintln!("配置验证失败:");
+        for error in errors {
+            eprintln!("  - {}", error);
+        }
+        std::process::exit(1);
+    }
+    
+    // 初始化高级日志系统
+    let log_config = app_config.logging.to_advanced_log_config()
+        .expect("Failed to convert logging config");
+    
+    let _log_manager = advanced_logging::AdvancedLogManager::new(log_config)
+        .init()
+        .expect("Failed to initialize logging system");
+    
+    tracing::info!("Collaboard Tauri应用程序启动");
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -322,7 +343,7 @@ pub fn run() {
             // 将服务添加到应用状态
             app.manage(Arc::new(Mutex::new(file_manager)));
             
-            info!("文件管理系统初始化完成");
+            tracing_info!("文件管理系统初始化完成");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

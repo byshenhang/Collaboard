@@ -19,33 +19,10 @@ import './FileManager.css';
  * 文件管理器页面组件
  */
 export const FileManager: React.FC = () => {
-  // 状态管理
-  const [selectedDirectory, setSelectedDirectory] = useState<string | null>(null);
-  const [showUpload, setShowUpload] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [sortConfig, setSortConfig] = useState<FileSortConfig>({
-    field: 'name',
-    direction: 'asc',
-  });
-  const [filterConfig, setFilterConfig] = useState<FileFilterConfig>({
-    showHidden: false,
-    fileTypes: [],
-  });
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  // 文件管理器配置
-  const { config } = useFileManagerConfig({
-    maxFileSize: 100 * 1024 * 1024, // 100MB
-    allowedFileTypes: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.txt', '.zip'],
-    maxConcurrentUploads: 5,
-    enablePreview: true,
-    enableThumbnails: true,
-  });
-
   // 文件管理器Hook
   const {
     // 状态
+    state,
     directoryTree,
     currentFiles,
     uploadQueue,
@@ -71,6 +48,41 @@ export const FileManager: React.FC = () => {
     searchFiles,
     getStorageStats,
   } = useFileManager();
+
+  // 从state中获取currentDirectory
+  const currentDirectory = state.currentDirectory;
+
+  // 选中的目录 - 默认使用当前目录
+  const [selectedDirectory, setSelectedDirectory] = useState<string | null>(currentDirectory || null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 当currentDirectory变化时，更新selectedDirectory
+  useEffect(() => {
+    if (currentDirectory && !selectedDirectory) {
+      setSelectedDirectory(currentDirectory);
+    }
+  }, [currentDirectory, selectedDirectory]);
+  
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [sortConfig, setSortConfig] = useState<FileSortConfig>({
+    field: 'name',
+    direction: 'asc',
+  });
+  const [filterConfig, setFilterConfig] = useState<FileFilterConfig>({
+    showHidden: false,
+    fileTypes: [],
+  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // 文件管理器配置
+  const { config } = useFileManagerConfig({
+    maxFileSize: 100 * 1024 * 1024, // 100MB
+    allowedFileTypes: ['.jpg', '.jpeg', '.png', '.gif', '.pdf', '.doc', '.docx', '.txt', '.zip'],
+    maxConcurrentUploads: 5,
+    enablePreview: true,
+    enableThumbnails: true,
+  });
 
   // 初始化加载
   useEffect(() => {
@@ -138,6 +150,10 @@ export const FileManager: React.FC = () => {
     const targetDirectory = directoryId || selectedDirectory;
     if (targetDirectory) {
       uploadFiles(files, targetDirectory);
+    } else {
+      // 如果没有选中目录，提示用户先选择目录
+      alert('请先选择一个目录来上传文件');
+      console.warn('No directory selected for file upload');
     }
   }, [uploadFiles, selectedDirectory]);
 

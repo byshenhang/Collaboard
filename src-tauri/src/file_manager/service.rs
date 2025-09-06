@@ -130,8 +130,15 @@ impl FileManagerService {
     /// 
     /// 执行完整的文件上传流程：验证 -> 保存文件 -> 记录数据库
     pub async fn upload_file(&self, request: UploadRequest) -> Result<UploadResponse> {
+        tracing::info!("FileManagerService: 开始上传文件 '{}', 大小: {} bytes", 
+            request.original_name, request.file_data.len());
+        
         // 验证文件大小
+        tracing::debug!("验证文件大小: {} bytes, 最大允许: {} bytes", 
+            request.file_data.len(), self.config.max_file_size);
         if request.file_data.len() as u64 > self.config.max_file_size {
+            tracing::error!("文件大小超出限制: {} > {}", 
+                request.file_data.len(), self.config.max_file_size);
             return Err(FileManagerError::FileSizeExceeded {
                 size: request.file_data.len() as u64,
                 max_size: self.config.max_file_size,
@@ -139,28 +146,37 @@ impl FileManagerService {
         }
 
         // 验证文件类型
+        tracing::debug!("验证文件类型: {}", request.original_name);
         if !self.config.is_file_type_supported(Path::new(&request.original_name)) {
             let extension = Path::new(&request.original_name)
                 .extension()
                 .and_then(|ext| ext.to_str())
                 .unwrap_or("unknown");
+            tracing::error!("不支持的文件类型: {}", extension);
             return Err(FileManagerError::UnsupportedFileType {
                 file_type: extension.to_string(),
             });
         }
 
         // 确定目标目录
+        tracing::debug!("确定目标目录, 请求的目录ID: {:?}", request.directory_id);
         let directory_id = match request.directory_id {
             Some(id) => {
+                tracing::debug!("验证目录是否存在: {}", id);
                 // 验证目录是否存在
                 if self.db_service.get_directory(&id).await?.is_none() {
+                    tracing::error!("目录不存在: {}", id);
                     return Err(FileManagerError::DirectoryNotFound { path: id });
                 }
+                tracing::debug!("目录验证通过: {}", id);
                 id
             }
             None => {
+                tracing::debug!("未指定目录，创建或获取根目录");
                 // 创建根目录（如果不存在）
-                self.ensure_root_directory().await?
+                let root_id = self.ensure_root_directory().await?;
+                tracing::debug!("使用根目录: {}", root_id);
+                root_id
             }
         };
 
@@ -168,15 +184,23 @@ impl FileManagerService {
         let storage_subdir = self.config.get_storage_subdir();
         let relative_subdir = storage_subdir.strip_prefix(&self.config.storage_path)
             .unwrap_or(&storage_subdir);
+        tracing::debug!("存储子目录: {:?}", relative_subdir);
 
         // 保存文件到文件系统
+        tracing::debug!("开始保存文件到文件系统");
         let upload_info = self.fs_service.save_file(
             &request.file_data,
             &request.original_name,
             relative_subdir,
-        ).await?;
+        ).await.map_err(|e| {
+            tracing::error!("文件系统保存失败: {}", e);
+            e
+        })?;
+        tracing::info!("文件保存到文件系统成功: {:?}, 大小: {} bytes", 
+            upload_info.saved_path, upload_info.file_size);
 
         // 记录到数据库
+        tracing::debug!("开始记录文件信息到数据库");
         let file_info = self.db_service.create_file(
             &upload_info.unique_name,
             &request.original_name,
@@ -185,12 +209,14 @@ impl FileManagerService {
             upload_info.file_size as i64,
             &upload_info.mime_type,
         ).await.map_err(|e| {
+            tracing::error!("数据库记录失败: {}, 开始清理文件", e);
             // 如果数据库操作失败，尝试清理已保存的文件
             tokio::spawn(async move {
                 let _ = tokio::fs::remove_file(&upload_info.saved_path).await;
             });
             e
         })?;
+        tracing::info!("文件信息记录到数据库成功: ID={}", file_info.id);
 
         Ok(UploadResponse {
             file_id: file_info.id,

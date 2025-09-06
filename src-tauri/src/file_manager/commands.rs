@@ -107,27 +107,45 @@ pub async fn upload_file(
     command: UploadFileCommand,
     service: State<'_, FileManagerState>,
 ) -> std::result::Result<CommandResponse<UploadResponse>, String> {
+    tracing::info!("开始处理文件上传请求: 文件名={}, 文件大小={} bytes, 目录ID={:?}", 
+        command.original_name, command.file_data.len(), command.directory_id);
+    
     // 参数验证
     if command.file_data.is_empty() {
+        tracing::error!("文件上传失败: 文件数据为空");
         return Ok(CommandResponse::error("File data cannot be empty".to_string()));
     }
 
     if command.original_name.trim().is_empty() {
+        tracing::error!("文件上传失败: 文件名为空");
         return Ok(CommandResponse::error("Original name cannot be empty".to_string()));
     }
 
     // 获取服务实例
+    tracing::debug!("获取文件管理服务实例");
     let service = service.lock().await;
     
     // 构建请求
     let request = UploadRequest {
         file_data: command.file_data,
-        original_name: command.original_name,
-        directory_id: command.directory_id,
+        original_name: command.original_name.clone(),
+        directory_id: command.directory_id.clone(),
     };
 
+    tracing::debug!("调用文件管理服务上传文件");
     // 执行上传
     let result = service.upload_file(request).await;
+    
+    match &result {
+        Ok(response) => {
+            tracing::info!("文件上传成功: 文件ID={}, 文件名={}, 大小={} bytes", 
+                response.file_id, response.file_name, response.file_size);
+        }
+        Err(error) => {
+            tracing::error!("文件上传失败: {}", error);
+        }
+    }
+    
     Ok(CommandResponse::from(result))
 }
 

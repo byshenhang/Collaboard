@@ -1,0 +1,93 @@
+# Collaboard 日志配置文件
+# 该文件用于配置应用程序的日志行为
+
+[logging]
+# 应用名称，用于日志文件前缀
+app_name = "collaboard"
+
+# 日志级别: TRACE, DEBUG, INFO, WARN, ERROR
+level = "INFO"
+
+# 日志输出目录
+log_dir = "logs"
+
+# 是否启用控制台输出
+console_enabled = true
+
+# 是否启用文件输出
+file_enabled = true
+
+# 是否使用JSON格式输出
+json_format = false
+
+# 文件轮转策略: "hourly", "daily", "never"
+rotation = "daily"
+
+# 环境过滤器，用于控制不同模块的日志级别
+# 格式: "module1=level1,module2=level2"
+env_filter = "collaboard=debug,tauri=info,rusqlite=warn"
+
+[logging.performance]
+# 是否启用性能监控日志
+enabled = true
+
+# 性能监控阈值（毫秒），超过此时间的操作会被记录
+threshold_ms = 100
+
+[logging.user_actions]
+# 是否记录用户操作日志
+enabled = true
+
+# 是否记录敏感操作（如删除、修改权限等）
+log_sensitive_operations = true
+
+[logging.error_handling]
+# 是否启用详细错误日志
+detailed_errors = true
+
+# 是否记录错误堆栈信息
+include_stack_trace = true
+
+# 错误重试次数记录
+log_retry_attempts = true
+
+[logging.file_operations]
+# 是否记录文件操作日志
+enabled = true
+
+# 文件操作日志级别
+level = "INFO"
+
+# 是否记录文件内容哈希（用于完整性检查）
+log_file_hash = false
+
+[logging.system_monitoring]
+# 是否启用系统监控日志
+enabled = true
+
+# 系统监控间隔（秒）
+interval_seconds = 300
+
+# 资源使用率告警阈值
+[logging.system_monitoring.thresholds]
+cpu_warning = 80.0
+cpu_critical = 95.0
+memory_warning = 85.0
+memory_critical = 95.0
+disk_warning = 90.0
+disk_critical = 98.0
+
+[logging.development]
+# 开发模式设置（仅在开发环境生效）
+
+# 是否启用详细的调试日志
+verbose_debug = true
+
+# 是否记录SQL查询
+log_sql_queries = true
+
+# 是否记录HTTP请求/响应
+log_http_traffic = false
+
+# 是否启用颜色输出（控制台）
+colored_output = true

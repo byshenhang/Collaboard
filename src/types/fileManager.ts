@@ -22,6 +22,7 @@ export interface UploadFileRequest {
   file_data: number[];
   original_name: string;
   directory_id?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -43,6 +44,7 @@ export interface UploadFileResponse {
 export interface CreateDirectoryRequest {
   name: string;
   parent_id?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -55,6 +57,40 @@ export interface CreateDirectoryResponse {
   path: string;
   created_at: string;
 }
+
+/**
+ * 删除文件请求
+ */
+export interface DeleteFileCommand {
+  file_id: string;
+  [key: string]: unknown;
+}
+
+/**
+ * 删除目录请求
+ */
+export interface DeleteDirectoryCommand {
+  directory_id: string;
+  [key: string]: unknown;
+}
+
+/**
+ * 获取目录文件请求
+ */
+export interface GetDirectoryFilesCommand {
+  directory_id: string;
+  [key: string]: unknown;
+}
+
+/**
+ * 获取文件信息请求
+ */
+export interface GetFileInfoCommand {
+  file_id: string;
+  [key: string]: unknown;
+}
+
+
 
 /**
  * 目录树节点

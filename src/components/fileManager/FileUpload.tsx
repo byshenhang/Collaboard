@@ -297,13 +297,22 @@ const DropZone: React.FC<DropZoneProps> = ({
     event.preventDefault();
     event.stopPropagation();
     
-    if (disabled) return;
+    console.log('Drop event triggered', { disabled });
+    
+    if (disabled) {
+      console.warn('Drop ignored: component is disabled');
+      return;
+    }
     
     setIsDragOver(false);
     
     const files = getFilesFromDragEvent(event);
+    console.log('Files extracted from drop event:', files.length, files.map(f => f.name));
+    
     if (files.length > 0) {
       onFileDrop(files);
+    } else {
+      console.warn('No files found in drop event');
     }
   }, [disabled, onFileDrop]);
 
@@ -402,28 +411,55 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
   // 处理文件上传
   const handleFileUpload = useCallback((files: File[]) => {
-    if (readonly) return;
+    console.log('handleFileUpload called with files:', files.length, files.map(f => f.name));
+    console.log('Current directory:', currentDirectory);
+    console.log('Readonly mode:', readonly);
+    
+    if (readonly) {
+      console.warn('Upload ignored: component is in readonly mode');
+      return;
+    }
+    
+    if (!files.length) {
+      console.warn('No files provided for upload');
+      return;
+    }
+    
+    // 检查是否有有效的目录
+    if (!currentDirectory) {
+      alert('请先选择一个目录来上传文件');
+      console.warn('No current directory for file upload');
+      return;
+    }
     
     // 验证文件
     const validFiles = files.filter(file => {
+      console.log(`Validating file: ${file.name}, size: ${file.size}`);
+      
       if (config?.maxFileSize && file.size > config.maxFileSize) {
-        console.warn(`文件 ${file.name} 超过大小限制`);
+        console.warn(`文件 ${file.name} 超过大小限制: ${file.size} > ${config.maxFileSize}`);
         return false;
       }
       
       if (config?.allowedFileTypes && config.allowedFileTypes.length > 0) {
         const extension = getFileExtension(file.name);
         if (!config.allowedFileTypes.includes(extension)) {
-          console.warn(`文件 ${file.name} 格式不支持`);
+          console.warn(`文件 ${file.name} 格式不支持: ${extension} not in [${config.allowedFileTypes.join(', ')}]`);
           return false;
         }
       }
       
+      console.log(`File ${file.name} validation passed`);
       return true;
     });
     
+    console.log(`Validation complete: ${validFiles.length}/${files.length} files valid`);
+    
     if (validFiles.length > 0) {
+      console.log('Calling onFileUpload with valid files:', validFiles.map(f => f.name));
       onFileUpload?.(validFiles, currentDirectory);
+    } else {
+      console.warn('No valid files to upload');
     }
   }, [readonly, config, currentDirectory, onFileUpload]);
 
